@@ -51,7 +51,7 @@ The command will clone this repo and find one skill.
 
 ## 📝 Copyright & License
 
-Copyright ©️ 2025-2026 Hesprs (Hēsperus)
+Copyright ©️ 2026 Hesprs (Hēsperus)
 
 Architecture whitepaper and README licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
