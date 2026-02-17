@@ -1,0 +1,23 @@
+{
+	"name": "synthkernel",
+	"private": true,
+	"description": "A type-safe and composable meta architecture for modular monolith development.",
+	"keywords": [],
+	"license": "CC BY-SA 4.0",
+	"author": "",
+	"type": "module",
+	"scripts": {
+		"lint": "oxlint --type-aware --fix && oxfmt",
+		"check": "tsc && oxfmt --check && oxlint --type-aware"
+	},
+	"dependencies": {
+		"@needle-di/core": "^1.1.0"
+	},
+	"devDependencies": {
+		"oxfmt": "^0.32.0",
+		"oxlint": "^1.47.0",
+		"oxlint-tsgolint": "^0.13.0",
+		"typescript": "^5.9.3"
+	},
+	"packageManager": "pnpm@10.28.0"
+}
