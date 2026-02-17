@@ -25,7 +25,7 @@ SynthKernel is a low-level system design approach for making clear and structure
 
 The simplest implementation of SynthKernel consists of a **central loader** and flat **modules**. Unlike other modularity conventions that design the loader to provide interfaces and APIs, the loader in SynthKernel only manages module loading and lifecycles, all actual functionalities are achieved by modules. Modules are the actual center of the entire application - they define APIs, execute real logic, augment the the loader class and wire each other via dependency injection. The module loader behaves as a lifecycle manager and a facade between complex internal logic and the application consumer.
 
-SynthKernel doesn't impose any limitations, you can use the philosophy of it in any context - in software development, OS design, or robotics control. It also allows you to compose the modules as freely as you can. Overall, with SynthKernel, you should be able to clearly demonstrate your APP via a tree diagram.
+SynthKernel doesn't impose any limitations on what you can achieve, you can use the philosophy of it in any context - in software development, OS design, or robotics control. It also allows you to compose the modules as freely as you can. Overall, with SynthKernel, you should be able to clearly demonstrate your APP via a tree diagram.
 
 ## 🔑 Core Problem It Solves
 
@@ -35,7 +35,7 @@ SynthKernel addresses the architectural friction found in traditional monolithic
 
 SynthKernel is 100% AI-native, and is confident to boost the performance of agentic coding greatly. From a personal perspective, it is crucial to have a convention of architecture during agentic coding. This can ensures AI can produce human-friendly code and also prevents them from entangling themselves in a spaghetti. This could also partially explain why AI agents are so versed at frontend - since there're clear conventions of architecture to follow.
 
-WARNING: SynthKernel does impose very strict and opinionated naming, architecture and file system conventions, and is still in experimental phase.
+WARNING: SynthKernel does enforce very strict and opinionated naming, architecture and file system conventions, and is still in experimental phase.
 
 **To install the skill**:
 
