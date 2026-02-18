@@ -8,15 +8,25 @@ You need to add a module when you want to add a new feature or split bloated mod
 
 ### Step 1 Clarify Requirements
 
-Before Proceeding, ask yourselves:
+Before Proceeding, ask yourself:
 
-1. Am I clear about whether DI and Augmentation are enabled, and all the lifecycle hooks & orchestrations of the loader? If not, read loader's code to know them.
-2. What's the function of the module?
-3. Does the module need DI, augmentation, lifecycle hooks and orchestrations? Are the ones provided by the loader suffice? If not, read [start](start.md) and modify the loader.
+1. Needs:
+
+- What's the function of the module?
+- Does the module need DI, augmentation, lifecycle hooks and orchestrations?
+
+2. Loader:
+
+- Am I clear about whether DI and Augmentation are enabled, and all the lifecycle hooks & orchestrations of the loader? If not, read loader's code to know them.
+- Are the ones provided by the loader suffice? If not, read [start](start.md) and modify the loader.
+
+3. Specific Needs:
 
 - DI: What other modules it needs?
-- Lifecycle hooks: what lifecycle events the module needs to subscribe to?
-- Orchestrations: does the module has configurable states to receive from or contribute to the loader (the facade)? Like configs defined by users or a event map that needs extending.
+- Lifecycle Hooks: what lifecycle events the module needs to subscribe to?
+  - Distinguish lifecycle hooks from normal event hooks, lifecycle hooks (e.g. `onDispose`) is defined on the loader, while event hooks (e.g. `onLogin`) should be defined in modules and accessed via DI.
+- Orchestrations: does the module has configurable states to receive from or contribute to the loader (the facade)? (e.g. configs defined by users / a event map that needs extending)
+  - To understand this, imagine module A contributes `{ a: boolean }`, B contributes `{ b: number }`, the orchestrated type will be `{ a: boolean; b: number }`.
 - Augmentations: Do modules need to inject methods and properties back to the loader so that consumers can access module functions?
 
 ### Step 2 Construct the Module
@@ -73,7 +83,7 @@ export class Module extends BaseModule<Options, Augmentation> {
 
 ### Step 3 Record References
 
-If you have write access to a project-wide memory system like `AGENTS.md`, find the `Project Architecture` section and update the tree structure to add your new module.
+If you have write access to a project-wide memory system like `AGENTS.md`, find the `Project Architecture` section and update the tree structure to reflect your new module.
 
 ## Split or Elevate a Module
 

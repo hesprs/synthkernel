@@ -27,11 +27,29 @@ Think about the best way to divide your logic into modules, ensure:
 
 Now ask yourself:
 
-1. DI: Does this project need inter-module communication? Or just between loader and each module? Has the user already installed a DI library?
-2. Orchestration: Do modules have configurable states to receive from or contribute to the loader (the facade)? Like configs defined by users or a event map that needs extending. Do they contain intrinsic fields that should be determined at the top level, not by any modules? Are they type only or affect runtime logic?
-3. Lifecycle Hooks: How many lifecycle hooks does a module need? Does the loader needs to handle advanced loading patterns like lazy loading?
-4. Augmentation: Do modules need to inject methods and properties back to the loader so that consumers can access module functions?
-5. Utilities: Are there any existing code or installed libraries that allows you to create hooks (or called event listeners) easily?
+1. Dependency Injection:
+
+- Does this project need inter-module communication or just between loader and each module?
+- Has the user already installed a DI library?
+
+2. Type Orchestration:
+
+- Do modules have configurable states to receive from or contribute to the loader (the facade)? (e.g. configs defined by users / a event map that needs extending)
+- Do they contain intrinsic fields that should be determined at the top level, not by any modules? - Are they type only (e.g. an event-type mapping) or affect runtime logic (e.g. options)?
+- To understand this, imagine module A contributes `{ a: boolean }`, B contributes `{ b: number }`, the orchestrated type will be `{ a: boolean; b: number }`.
+
+3. Lifecycle Hooks:
+
+- How many application-wide lifecycle hooks (not normal event hooks which should be defined by modules) does a module need?
+- Does the loader needs to handle advanced loading patterns (e.g. lazy loading)?
+
+4. Augmentation:
+
+- Do modules need to inject methods and properties back to the loader so that consumers can access module functions?
+
+5. Utilities:
+
+- Are there any existing code or installed libraries that allows you to create hooks (or called event listeners) easily?
 
 ## Step 4 Create Types
 
@@ -238,7 +256,7 @@ class Loader {
 	private onStart = makeHook();
 	private onRestart = makeHook();
 
-    // all your orchestrations according to your needs (question 2)
+    // all your orchestrations according to your needs (question 2), this is the only case where you write some app logic in a loader. And all reason for it is type orchestration. Usually required by type-aware options or a event emitter whose event map is orchestrated
 	options: AllOptions<M>;
 
     // the DI container (question 1)
@@ -312,7 +330,7 @@ export default Loader as LoaderType;
 
 ## Step 9 Final Buzzwords
 
-Now you have successfully implemented the infrastructure of SynthKernel. Note that although you can implement business logic directly in the loader, it is **discouraged**. Always remember that **loaders load modules only, modules run functional logic**.
+Now you have successfully implemented the infrastructure of SynthKernel. Note that although you can implement business logic directly in the loader, it is **discouraged** unless the property or method is widely used among modules and needs **type orchestration**. Always remember that **loaders load modules only, modules run functional logic**.
 
 If you have access to project-wide memory like `AGENTS.md`, modify the `Project Architecture` section it to reflect the up-to-date project structure. Projects implementing SynthKernel can always be structured in a tree style. If you haven't seen this section, create it:
 
@@ -321,7 +339,7 @@ If you have access to project-wide memory like `AGENTS.md`, modify the `Project 
 
 This project uses SynthKernel architecture. Typical practice consists a module loader class and module classes:
 
-- The module loader class **only** manages module lifecycles, and behaves as an facade at of your app logic.
+- The module loader class manages module lifecycles, orchestrates types, and behaves as an facade at of your app logic.
 - All module classes extend a `BaseModule` class, they define APIs, register lifecycle hooks, execute actual logic, augment the loader class and wire each other via dependency injection.
 - Types are resolved via generics orchestration.
 - Modules are composed to the loader to form an APP.

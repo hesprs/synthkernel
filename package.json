@@ -11,7 +11,8 @@
 		"check": "tsc && oxfmt --check && oxlint --type-aware"
 	},
 	"dependencies": {
-		"@needle-di/core": "^1.1.0"
+		"@needle-di/core": "^1.1.0",
+		"@types/node": "^25.2.3"
 	},
 	"devDependencies": {
 		"oxfmt": "^0.32.0",

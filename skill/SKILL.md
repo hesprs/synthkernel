@@ -2,8 +2,6 @@
 name: synthkernel
 description: Structure your APP using SynthKernel, a type-safe and composable meta architecture for modular monolith development in TypeScript.
 license: MIT
-metadata:
-  language: TypeScript
 ---
 
 ## About SynthKernel
@@ -12,7 +10,7 @@ SynthKernel is a TypeScript software architecture that helps you write efficient
 
 Typical practice of SynthKernel consists a module loader class and module classes:
 
-- The module loader class **only** manages module lifecycles, and behaves as an facade at the surface of your app logic.
+- The module loader class manages module lifecycles, orchestrates types, and behaves as an facade at the surface of your app logic.
 - All module classes extend a `BaseModule` class, they define APIs, execute actual logic, augment the loader class and wire each other via dependency injection.
 - Types are resolved via generics orchestration.
 - Modules are composed to the loader to form an APP. A module loader can also be a module of a parent loader.

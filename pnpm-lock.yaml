@@ -11,6 +11,9 @@ importers:
       '@needle-di/core':
         specifier: ^1.1.0
         version: 1.1.0
+      '@types/node':
+        specifier: ^25.2.3
+        version: 25.2.3
     devDependencies:
       oxfmt:
         specifier: ^0.32.0
@@ -288,6 +291,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@types/node@25.2.3':
+    resolution: {integrity: sha512-m0jEgYlYz+mDJZ2+F4v8D1AyQb+QzsNqRuI7xg1VQX/KlKS0qT9r1Mo16yo5F/MtifXFgaofIFsdFMox2SxIbQ==}
+
   oxfmt@0.32.0:
     resolution: {integrity: sha512-KArQhGzt/Y8M1eSAX98Y8DLtGYYDQhkR55THUPY5VNcpFQ+9nRZkL3ULXhagHMD2hIvjy8JSeEQEP5/yYJSrLA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -315,6 +321,9 @@ packages:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
     hasBin: true
+
+  undici-types@7.16.0:
+    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
 snapshots:
 
@@ -452,6 +461,10 @@ snapshots:
   '@oxlint/binding-win32-x64-msvc@1.47.0':
     optional: true
 
+  '@types/node@25.2.3':
+    dependencies:
+      undici-types: 7.16.0
+
   oxfmt@0.32.0:
     dependencies:
       tinypool: 2.1.0
@@ -511,3 +524,5 @@ snapshots:
   tinypool@2.1.0: {}
 
   typescript@5.9.3: {}
+
+  undici-types@7.16.0: {}
