@@ -90,4 +90,42 @@ If you have write access to a project-wide memory system like `AGENTS.md`, find 
 To keep your codebase maintainable, once you find a module has too much functions, you need to **split or elevate** a module.
 
 - To split a module, simply extract some tightly coupled methods and properties into another module, following the template of [create a new module](#add-a-module). E.g., you can split a huge `Login` module into `PasswordLogin` and `2FALogin` modules.
-- To elevate, simply make this module a new hierarchy of loader and modules and making the loader both a loader and module of a parent loader. E.g., you can elevate a `Login` module to become a `Login` loader with modules `Password` and `2FA`. Follow the guide of [how to create a new loader hierarchy](start.md).
+- To elevate, simply make this module a new hierarchy of loader and modules and making the loader both a loader and module of a parent loader - aka. a "sub-loader". E.g., you can elevate a `Login` module to become a `Login` loader with modules `Password` and `2FA`. Follow the guide of [how to create a new loader hierarchy](start.md).
+
+### Sub-Loader
+
+Sub-loader is a combination of loader and module. To create a sub-loader, simply create a new loader class as usual, then create another module class that instantiates the loader class. To put it another way, a sub-loader is a module class and a loader class put in the same file.
+
+## SynthKernel Principles
+
+### Functional Separation
+
+Note that although you can implement business logic directly in the loader, it is **discouraged** unless the property or method is widely used among modules and needs **type orchestration**. Always remember that **loaders load modules only, modules run functional logic**.
+
+### Unidirectional Logic Flow
+
+Sub-loaders create inter-hierarchal communication challenges. Bad design can still lead to unmaintainable code. A logic flow standard is introduced to help build clear and explicit dependency relationships:
+
+1. Each hierarchy is a self-sustaining unit with its isolated DI container.
+2. Each module can only access its siblings and communicate with its parent.
+3. To use a module in a higher hierarchy, it must be obtained by the direct loader from the DI container in the higher hierarchy and provided into the child modules' DI container by the.
+4. To subscribe module-defined hooks in a higher hierarchy, prefer to augment the sub-loader which is responsible for the subscription. Avoid directly subscribing to higher hooks in the module.
+
+Above can be summarized as a unidirectional flow: **Raw down, fine up**:
+
+**What's down**:
+
+1. raw input
+2. raw module logic
+
+**What's up**:
+
+1. selected methods and properties augmented to the loader
+2. module-declared types to orchestrate
+
+### Avoid Habits from the Past
+
+SynthKernel is fundamentally different from the traditional service-oriented architecture. Do not think the following when working with SynthKernel:
+
+- **Do not think of "a configuration manager module"**. The configuration's type is orchestrated decentralizedly by modules, and the configuration's value in constructor-injected to modules.
+- **Clearly distinguish tasks for loaders and modules**. For example, you should distinguish between lifecycle hooks and module-specific hooks; lifecycle hooks are mostly start and stop of the entire APP or modules, while the latter is often related to the real function of the APP.

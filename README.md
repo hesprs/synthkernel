@@ -32,25 +32,83 @@ SynthKernel doesn't impose any limitations on what you can achieve, you can use 
 
 ## 🔑 Core Problem It Solves
 
-SynthKernel addresses the architectural friction found in traditional monolithic or loosely-coupled plugin systems by enforcing a **type-safe, modular composition model**. While standard architectures often struggle with "God Objects" that accumulate tight coupling or require manual registry updates to extend functionality, SynthKernel leverages TypeScript's type system to automatically orchestrate capabilities: modules self-register their configurations, lifecycle hooks, and public APIs directly into the central Loader without boilerplate. This eliminates the disconnect between runtime behavior and static types, ensuring that adding a new feature (like a file parser or CI check) instantly augments the application's interface and type definitions, resulting in a codebase that scales with strict modularity, zero configuration drift, and inherent testability.
+SynthKernel addresses the architectural friction found in traditional monolithic or loosely-coupled plugin systems by enforcing a **type-safe, modular composition model**. While standard architectures often struggle with "God Objects" that accumulate tight coupling or require manual registry updates to extend functionality, SynthKernel leverages TypeScript's type system to automatically orchestrate capabilities. This eliminates the disconnect between runtime behavior and static types, ensuring that adding a new feature instantly augments the application's interface and type definitions, resulting in a codebase that scales with strict modularity, zero configuration drift, and inherent testability.
+
+## 📰 Whitepaper
+
+SynthKernel provides a Jupyter Notebook whitepaper running TypeScript, you can find it here: [SynthKernel Whitepaper](https://github.com/hesprs/synthkernel/blob/main/whitepaper.ipynb).
+
+VSCode or any fork of it is recommended to view it. To correctly execute the whitepaper, you need to do some setup:
+
+**Normal OS**:
+
+Install Git, Python3, Node.js, VSCode or its fork, and ensure you have installed the following extensions for VSCode:
+
+- `ms-toolsai.jupyter`
+- `bierner.markdown-mermaid`
+
+Then open your terminal at a proper directory (we will create some file in it) and run following commands:
+
+```sh
+# install Jupyter if you haven't
+pip3 install jupyterlab
+
+# clone and enter this repp
+git clone https://github.com/hesprs/synthkernel.git
+cd synthkernel
+
+# install dependencies, use your preferred package manager
+npm install
+
+# register TS kernel, you can also use pnpm or whatever
+npx tslab install
+```
+
+Then open your VSCode in the cloned repo and open `whitepaper.ipynb`, choose `Select Kernel` -> `Jupyter Kernel...` -> `TypeScript`, now you can read the notebook.
+
+**Nix Approach**:
+
+Install Git, Python3, Node.js, VSCode or its fork, and ensure you have installed the following extensions for VSCode:
+
+- `ms-toolsai.jupyter`
+- `bierner.markdown-mermaid`
+
+Then open your terminal at a proper directory (we will create some file in it) and run following commands:
+
+```sh
+# clone and enter this repp
+git clone https://github.com/hesprs/synthkernel.git
+cd synthkernel
+
+# install dependencies, use your preferred package manager
+npm install
+
+# enter nix shell
+nix-shell shell.nix
+
+# run VSCode, if you are using Cursor or whatever forks, change accordingly
+code .
+```
+
+Open `whitepaper.ipynb`, choose `Select Kernel` -> `Jupyter Kernel...` -> `TypeScript`, now you can read the notebook.
 
 ## 🤖 Agent Skill
 
-SynthKernel is 100% AI-native, and is confident to boost the performance of agentic coding greatly. From a personal perspective, it is crucial to have a convention of architecture during agentic coding. This can ensures AI can produce human-friendly code and also prevents them from entangling themselves in a spaghetti. This could also partially explain why AI agents are so versed at frontend - since there're clear conventions of architecture to follow.
+SynthKernel is 100% AI-native, and is confident to boost the performance of agentic coding greatly.
+
+AI performs best when they have strict guidelines to follow, which is the reason why AI is so versed at frontend - the frameworks are right there and the best practice patterns are defined. To have a strict instruction on the software architecture ensures AI can produce human-friendly code and also prevents them from entangling themselves in a spaghetti.
 
 WARNING: SynthKernel does enforce very strict and opinionated naming, architecture and file system conventions, and is still in experimental phase.
 
 **To install the skill**:
 
-1. Choose `npx` / `pnpm dlx` / `bunx` or whatever according your preference, take `bunx` as an example:
+Choose `npx` / `pnpm dlx` / `bunx` or whatever according your preference, take `npx` as an example:
 
 ```sh
-bunx skills add hesprs/synthkernel
+npx skills add hesprs/synthkernel
 ```
 
-The command will clone this repo and find one skill.
-
-2. Choose the only skill, then choose the coding agent and whether to install globally according to your needs. Continue the scaffolder and the skill will be installed.
+The command will scaffold and find 1 skill. Choose the only skill, then choose the coding agent and whether to install globally according to your needs. Continue the scaffolder and the skill will be installed.
 
 ## 📝 Copyright & Licenses
 

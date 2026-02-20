@@ -85,7 +85,7 @@
 		"typescript/no-misused-spread": "warn",
 		"typescript/no-non-null-asserted-optional-chain": "warn",
 		"typescript/no-redundant-type-constituents": "warn",
-		"typescript/no-this-alias": "warn",
+		"typescript/no-this-alias": "off",
 		"typescript/no-unnecessary-parameter-property-assignment": "warn",
 		"typescript/no-unsafe-declaration-merging": "warn",
 		"typescript/no-unsafe-unary-minus": "warn",

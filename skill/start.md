@@ -94,7 +94,7 @@ If you cannot create hooks using existing code or libraries, create (or add foll
 import type { GeneralArray } from './types.ts'; // change this to the actual path of `types.ts`
 
 type MatchingFunc<Args extends GeneralArray> = (...args: Args) => unknown;
-export type Hook<Args extends GeneralArray> = {
+export type Hook<Args extends GeneralArray = []> = {
 	(...args: Args): void;
 	subs: Set<MatchingFunc<Args>>;
 	subscribe(callback: MatchingFunc<Args>): void;
@@ -167,9 +167,8 @@ import type { General, GeneralObject, ModuleInput as MI, Orchestratable } from '
 import type { Hook } from './utilities.ts'; // change this to the real hook type you are using (question 5)
 import type { Container } from '@needle-di/core'; // change or delete this according to your DI container needs (question)
 
-type GeneralModuleCtor = typeof BaseModule<General, General>;
-export type ModuleInputCtor = Array<GeneralModuleCtor>;
-export type ModuleInput = MI<GeneralModuleCtor>;
+type ModuleInput = MI<GeneralModuleCtor>;
+export type GeneralModuleCtor = typeof BaseModule<General, General>;
 export type BaseArgs = ConstructorParameters<GeneralModuleCtor>;
 
 // change, add, or delete this according to your orchestration needs (question 2), align the second type parameter to the actual property name in the BaseModule
@@ -226,8 +225,8 @@ Create or add following lines to `index.ts` (the loader), adjust according to yo
 
 ```TypeScript
 // adjust this to the real location of `BaseModule.ts`
-// imports should include: `BaseModule`, `ModuleInputCtor`, `ModuleInput`, all orchestrations if needed (question 2), augmentation if needed (question 4)
-import type { GeneralModuleCtor, ModuleInputCtor, ModuleInput, Options, Augmentation } from './BaseModule.ts';
+// imports should include: `BaseModule`, all orchestrations if needed (question 2), augmentation if needed (question 4)
+import type { GeneralModuleCtor, Options, Augmentation } from './BaseModule.ts';
 import type { GeneralObject } from './types.ts'; // change this to the real path of `types.ts`
 import { makeHook } from './utilities.ts'; // change this to the real path of `utilities.ts`
 import { Container } from '@needle-di/core'; // change or delete this according to your DI container needs (question)
@@ -239,7 +238,7 @@ export interface BaseOptions {
 }
 
 // populate this once we have real modules
-const allModules = [];
+const allModules = []; // let TypeScript infer the type to keep the exact type
 type AllModules = typeof allModules;
 
 // the final orchestration of types, should include:
@@ -251,7 +250,7 @@ type AllAugmentation = Augmentation<AllModules>;
 // the loader class, change the class name freely
 // this is the target of augmentation, when an instance of the loader loads a module that augments it, new methods and properties will be reflected on both the loader's type and runtime property
 class Loader {
-	// all your lifecycle hooks according to your needs (question 3)
+	// all your lifecycle hooks according to your needs (question 3), adjust according to your lifecycle needs
 	private onDispose = makeHook(true);
 	private onStart = makeHook();
 	private onRestart = makeHook();
@@ -298,7 +297,7 @@ class Loader {
 		};
 		allModules.forEach(bind);
         // use non-assign container get to load all modules, if you need custom loading, it would be easy to implement yourself's
-		allModules.forEach((Module) => {
+		allModules.forEach((Module: GeneralModuleCtor) => {
 			this.container.get(Module);
 		});
 
@@ -306,11 +305,9 @@ class Loader {
 	}
 
     // core component for augmentation which should be passed in modules' class constructors, add this if you need augmentation
-	declare private _augmentSlot: unknown;
 	private augment = (aug: GeneralObject) => {
-		Object.entries(aug).forEach(([key, value]) => {
-			this[key as '_augmentSlot'] = value;
-		});
+		const descriptors = Object.getOwnPropertyDescriptors(aug);
+        Object.defineProperties(this, descriptors);
 	};
 
     // implement your lifecycle management methods freely
@@ -330,7 +327,7 @@ export default Loader as LoaderType;
 
 ## Step 9 Final Buzzwords
 
-Now you have successfully implemented the infrastructure of SynthKernel. Note that although you can implement business logic directly in the loader, it is **discouraged** unless the property or method is widely used among modules and needs **type orchestration**. Always remember that **loaders load modules only, modules run functional logic**.
+Now you have successfully implemented the infrastructure of SynthKernel.
 
 If you have access to project-wide memory like `AGENTS.md`, modify the `Project Architecture` section it to reflect the up-to-date project structure. Projects implementing SynthKernel can always be structured in a tree style. If you haven't seen this section, create it:
 

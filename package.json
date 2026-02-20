@@ -11,10 +11,10 @@
 		"check": "tsc && oxfmt --check && oxlint --type-aware"
 	},
 	"dependencies": {
-		"@needle-di/core": "^1.1.0",
-		"@types/node": "^25.2.3"
+		"@needle-di/core": "^1.1.0"
 	},
 	"devDependencies": {
+		"@types/node": "^25.2.3",
 		"oxfmt": "^0.32.0",
 		"oxlint": "^1.47.0",
 		"oxlint-tsgolint": "^0.13.0",

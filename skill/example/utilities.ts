@@ -1,7 +1,7 @@
 import type { GeneralArray } from './types.ts';
 
 type MatchingFunc<Args extends GeneralArray> = (...args: Args) => unknown;
-export type Hook<Args extends GeneralArray> = {
+export type Hook<Args extends GeneralArray = []> = {
 	(...args: Args): void;
 	subs: Set<MatchingFunc<Args>>;
 	subscribe(callback: MatchingFunc<Args>): void;
