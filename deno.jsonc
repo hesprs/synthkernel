@@ -13,7 +13,7 @@
 	"tasks": {
 		"run:example": "deno run skill/examples/example.ts",
 		"lint": "deno lint --fix && deno fmt",
-		"check": "deno lint && deno fmt --check"
+		"check": "deno lint && deno fmt --check --ignore=\"*.ipynb\"" // Deno always report Jupyter Notebooks as unformatted for no reason
 	},
 	"imports": {
 		"@needle-di/core": "jsr:@needle-di/core@^1.1.1"
