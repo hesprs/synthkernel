@@ -38,46 +38,46 @@ To add a module, create a file named `(module name in PascalCase).ts`, and write
 import { BaseModule, type BaseOptions } from './index.ts'; // all orchestrations needed by this module that has base fields, change the path to the actual path where the loader exists
 
 // import all modules that will be used by this module by DI
-import AnotherModule from './AnotherModule.ts'
+import AnotherModule from './AnotherModule.ts';
 
 // the types of orchestrations, must extend the base type if the orchestration has base fields, adjust according to your needs
 interface Options extends BaseOptions {
-    // all fields this module provides, adjust accordingly
-    option1: string;
-    option2?: boolean;
+	// all fields this module provides, adjust accordingly
+	option1: string;
+	option2?: boolean;
 }
 
 // the augmentation if the module needs, adjust the fields according to your needs
 interface Augmentation {
-    method: () => void;
-    property: boolean;
+	method: () => void;
+	property: boolean;
 }
 
 // change the module name to the intended one
 // pass type parameters in the correct order as defined in BaseModule
 // - if what you want to pass comes later, e.g., you only want to pass `Augmentation`, simply pass the base orchestration, like BaseModule<BaseOptions, Augmentation>
 export class Module extends BaseModule<Options, Augmentation> {
-    constructor(...args: BaseArgs) {
-        super(...args);
+	constructor(...args: BaseArgs) {
+		super(...args);
 
-        // if you need augmentation, you must call `this.augment` in your constructor and pass everything defined in your `Augmentation` interface.
-        this.augment({
-            method: this.method,
-            property: this.property,
-        });
+		// if you need augmentation, you must call `this.augment` in your constructor and pass everything defined in your `Augmentation` interface.
+		this.augment({
+			method: this.method,
+			property: this.property,
+		});
 
-        // subscribe to lifecycle hooks if needed, adjust accordingly
-        this.onStart(this.method);
+		// subscribe to lifecycle hooks if needed, adjust accordingly
+		this.onStart(this.method);
 
-        // use this.container.get() to inject a dependency
-       const dep = this.container.get(AnotherModule);
+		// use this.container.get() to inject a dependency
+		const dep = this.container.get(AnotherModule);
 
-        // ... freely implement your logic
-    }
+		// ... freely implement your logic
+	}
 
-    // ... write your logic, the module is your playground
-    method = () => {};
-    property = false;
+	// ... write your logic, the module is your playground
+	method = () => {};
+	property = false;
 }
 ```
 

@@ -11,7 +11,7 @@
  */
 
 import { Container } from '@needle-di/core';
-import type { GeneralModuleCtor, Options, Augmentation } from './BaseModule.ts';
+import type { Augmentation, GeneralModuleCtor, Options } from './BaseModule.ts';
 import type { GeneralObject } from './types.ts';
 import { AlertDispatch } from './AlertDispatch.ts';
 import { CoreLogging } from './CoreLogging.ts';

@@ -1,0 +1,16 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@needle-di/core@^1.1.1": "1.1.1"
+  },
+  "jsr": {
+    "@needle-di/core@1.1.1": {
+      "integrity": "e1e746a82f7a104f05db43ebbc6cc8457b56b67f7b5d7b746c0aa5fb9c838317"
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@needle-di/core@^1.1.1"
+    ]
+  }
+}

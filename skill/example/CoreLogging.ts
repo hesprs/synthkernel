@@ -3,7 +3,7 @@
  */
 
 import type { BaseOptions } from './index.ts';
-import { BaseModule, type BaseArgs } from './BaseModule.ts';
+import { type BaseArgs, BaseModule } from './BaseModule.ts';
 
 // Helper to enforce hierarchy
 const LEVELS = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 } as const;
@@ -46,7 +46,6 @@ export class CoreLogging extends BaseModule<Options, Augmentation> {
 	}
 
 	log = (level: Level, message: string) => {
-		// IMPLEMENTED: Check log level hierarchy
 		const currentLevel = LEVELS[level];
 		const minLevel = LEVELS[this.options.logLevel] ?? 0;
 		if (currentLevel < minLevel) return; // Skip logging if below threshold
@@ -60,6 +59,8 @@ export class CoreLogging extends BaseModule<Options, Augmentation> {
 		this._logs.push(entry);
 
 		// Always print if debug mode is forced in base options, otherwise respect level
-		if (this.options.debug || currentLevel >= minLevel) console.log(`[${level}] ${message}`);
+		if (this.options.debug || currentLevel >= minLevel) {
+			console.log(`[${level}] ${message}`);
+		}
 	};
 }

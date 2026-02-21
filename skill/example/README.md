@@ -60,7 +60,5 @@ Modules subscribe to global events (`onStart`, `onDispose`) defined by the Loade
 ├── utilities.ts      # Hook system implementation (makeHook)
 ├── CoreLogging.ts    # Module: Handles logging state and audit trail
 ├── AlertDispatch.ts  # Module: Handles validation and message dispatching
-├── main.ts           # Consumer: Example usage of PolisAlert
-├── tsconfig.json     # TypeScript config (requires allowImportingTsExtensions)
-└── AGENTS.md         # Architecture summary for AI agents
+└── main.ts           # Consumer: Example usage of PolisAlert
 ```

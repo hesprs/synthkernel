@@ -1,22 +1,26 @@
 // #region [DO NOT MODIFY] SynthKernel Core Types
-// oxlint-disable-next-line typescript/no-explicit-any
+// deno-lint-ignore no-explicit-any
 export type General = any;
 export type GeneralArray = ReadonlyArray<General>;
 export type GeneralObject = object;
 export type GeneralConstructor = new (...args: General[]) => General;
 
-type UnionToIntersection<U> = (U extends General ? (k: U) => void : never) extends (
-	k: infer I,
-) => void
-	? I
-	: never;
+type UnionToIntersection<U> =
+	(U extends General ? (k: U) => void : never) extends (
+		k: infer I,
+	) => void ? I
+		: never;
 
-type GeneralModuleInput = Array<GeneralConstructor> | Array<GeneralObject>;
+type GeneralModuleInput =
+	| ReadonlyArray<GeneralConstructor>
+	| ReadonlyArray<GeneralObject>;
 
-export type ModuleInput<T extends GeneralConstructor> = Array<T> | Array<InstanceType<T>>;
+export type ModuleInput<T extends GeneralConstructor> =
+	| ReadonlyArray<T>
+	| ReadonlyArray<InstanceType<T>>;
 
-type Instances<T extends GeneralModuleInput> =
-	T extends Array<GeneralConstructor> ? InstanceType<T[number]> : T[number];
+type Instances<T extends GeneralModuleInput> = T extends
+	ReadonlyArray<GeneralConstructor> ? InstanceType<T[number]> : T[number];
 
 export type Orchestratable<
 	T extends GeneralModuleInput,
