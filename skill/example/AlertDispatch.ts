@@ -3,7 +3,7 @@
  */
 
 import type { BaseOptions } from './index.ts';
-import { BaseModule, type BaseArgs } from './BaseModule.ts';
+import { type BaseArgs, BaseModule } from './BaseModule.ts';
 import { CoreLogging } from './CoreLogging.ts';
 
 interface Options extends BaseOptions {
@@ -48,14 +48,14 @@ export class AlertDispatch extends BaseModule<Options, Augmentation> {
 			return false;
 		}
 
-        await this.connectAlertService(message);
+		await this.connectAlertService(message);
 		return true;
 	};
 
-    private connectAlertService = async (alert: string) => { 
-        this.logging.log('INFO', `Dispatched: "${alert}"`);
+	private connectAlertService = async (alert: string) => {
+		this.logging.log('INFO', `Dispatched: "${alert}"`);
 
-        // Simulate async connection to alerting service, like an email api
+		// Simulate async connection to alerting service, like an email api
 		await new Promise((resolve) => setTimeout(resolve, 10));
 	};
 }

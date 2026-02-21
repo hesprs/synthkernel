@@ -8,6 +8,9 @@
 <p align="center">
     <img src="https://img.shields.io/badge/%F0%9F%96%90%EF%B8%8F%20Made%20by-Humans-333333?labelColor=25C260" alt="Made by Humans">
     <img src="https://img.shields.io/badge/%F0%9F%A6%BE%20Agent%20Skill-Available-333333?labelColor=8A2BF2" alt="Agent Skill Available">
+    <a href="https://github.com/hesprs/synthkernel/actions">
+        <img src="https://img.shields.io/github/actions/workflow/status/hesprs/synthkernel/ci.yml?style=flat&logo=github&logoColor=white&label=CI&labelColor=d4ab00&color=333333" alt="ci">
+    </a>
 </p>
 
 <p align="center">
@@ -40,9 +43,7 @@ SynthKernel provides a Jupyter Notebook whitepaper running TypeScript, you can f
 
 VSCode or any fork of it is recommended to view it. To correctly execute the whitepaper, you need to do some setup:
 
-**Normal OS**:
-
-Install Git, Python3, Node.js, VSCode or its fork, and ensure you have installed the following extensions for VSCode:
+Install Python3 and Deno (because it provides a Jupyter Notebook TypeScript kernel), ensure you have installed the following extensions for VSCode if you are using it:
 
 - `ms-toolsai.jupyter`
 - `bierner.markdown-mermaid`
@@ -53,44 +54,11 @@ Then open your terminal at a proper directory (we will create some file in it) a
 # install Jupyter if you haven't
 pip3 install jupyterlab
 
-# clone and enter this repp
-git clone https://github.com/hesprs/synthkernel.git
-cd synthkernel
-
-# install dependencies, use your preferred package manager
-npm install
-
-# register TS kernel, you can also use pnpm or whatever
-npx tslab install
+# register TS kernel
+deno jupyter --install
 ```
 
-Then open your VSCode in the cloned repo and open `whitepaper.ipynb`, choose `Select Kernel` -> `Jupyter Kernel...` -> `TypeScript`, now you can read the notebook.
-
-**Nix Approach**:
-
-Install Git, Python3, Node.js, VSCode or its fork, and ensure you have installed the following extensions for VSCode:
-
-- `ms-toolsai.jupyter`
-- `bierner.markdown-mermaid`
-
-Then open your terminal at a proper directory (we will create some file in it) and run following commands:
-
-```sh
-# clone and enter this repp
-git clone https://github.com/hesprs/synthkernel.git
-cd synthkernel
-
-# install dependencies, use your preferred package manager
-npm install
-
-# enter nix shell
-nix-shell shell.nix
-
-# run VSCode, if you are using Cursor or whatever forks, change accordingly
-code .
-```
-
-Open `whitepaper.ipynb`, choose `Select Kernel` -> `Jupyter Kernel...` -> `TypeScript`, now you can read the notebook.
+Then open `whitepaper.ipynb` in your viewer, choose the Deno kernel (in VSCode, it's `Select Kernel` -> `Jupyter Kernel...` -> `Deno`). Now you can read the notebook.
 
 ## 🤖 Agent Skill
 

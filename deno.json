@@ -1,0 +1,44 @@
+{
+	"description": "A type-safe and composable meta architecture for modular monolith development.",
+	"keywords": [
+		"modular-monolith",
+		"typescript",
+		"architecture",
+		"agent-skills",
+		"agentic-coding"
+	],
+	"license": "CC BY-SA 4.0",
+	"author": "",
+	"type": "module",
+	"tasks": {
+		"run:example": "deno run skill/examples/example.ts",
+		"lint": "deno lint --fix && deno fmt",
+		"check": "deno lint && deno fmt --check"
+	},
+	"imports": {
+		"@needle-di/core": "jsr:@needle-di/core@^1.1.1"
+	},
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"strict": true,
+		"skipLibCheck": true,
+		"verbatimModuleSyntax": true,
+		"lib": ["ESNext", "DOM", "DOM.Iterable"]
+	},
+	"fmt": {
+		"indentWidth": 4,
+		"useTabs": true,
+		"singleQuote": true,
+		"proseWrap": "never"
+	},
+	"lint": {
+		"rules": {
+			"tags": ["recommended"],
+			"exclude": [
+				"ban-types",
+				"no-this-alias"
+			]
+		}
+	}
+}

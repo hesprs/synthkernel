@@ -10,9 +10,9 @@ Check your `tsconfig.json` which should contain following:
 
 ```json
 {
-  "compilerOptions": {
-    "allowImportingTsExtensions": true
-  }
+	"compilerOptions": {
+		"allowImportingTsExtensions": true
+	}
 }
 ```
 
@@ -62,18 +62,22 @@ export type GeneralArray = ReadonlyArray<General>;
 export type GeneralObject = object;
 export type GeneralConstructor = new (...args: General[]) => General;
 
-type UnionToIntersection<U> = (U extends General ? (k: U) => void : never) extends (
-	k: infer I,
-) => void
-	? I
-	: never;
+type UnionToIntersection<U> =
+	(U extends General ? (k: U) => void : never) extends (
+		k: infer I,
+	) => void ? I
+		: never;
 
-type GeneralModuleInput = Array<GeneralConstructor> | Array<GeneralObject>;
+type GeneralModuleInput =
+	| ReadonlyArray<GeneralConstructor>
+	| ReadonlyArray<GeneralObject>;
 
-export type ModuleInput<T extends GeneralConstructor> = Array<T> | Array<InstanceType<T>>;
+export type ModuleInput<T extends GeneralConstructor> =
+	| ReadonlyArray<T>
+	| ReadonlyArray<InstanceType<T>>;
 
-type Instances<T extends GeneralModuleInput> =
-	T extends Array<GeneralConstructor> ? InstanceType<T[number]> : T[number];
+type Instances<T extends GeneralModuleInput> = T extends
+	ReadonlyArray<GeneralConstructor> ? InstanceType<T[number]> : T[number];
 
 export type Orchestratable<
 	T extends GeneralModuleInput,
@@ -106,17 +110,20 @@ export type Hook<Args extends GeneralArray = []> = {
  * Pass your arguments as the type parameter
  * @example const hook = makeHook(true); // create a hook that runs subscriptions in reverse order
  */
-export function makeHook<Args extends GeneralArray = []>(reverse: boolean = false) {
+export function makeHook<Args extends GeneralArray = []>(
+	reverse: boolean = false,
+) {
 	const result: Hook<Args> = (...args: Args) => {
 		if (reverse) {
 			const items = Array.from(result.subs).reverse();
 			items.forEach((callback) => {
 				callback(...args);
 			});
-		} else
+		} else {
 			result.subs.forEach((callback) => {
 				callback(...args);
 			});
+		}
 	};
 	result.subs = new Set();
 	result.subscribe = (callback: MatchingFunc<Args>) => {
@@ -151,8 +158,8 @@ According to your answer to question 2, step 3, if your app needs orchestration 
 // #region Base Orchestrations
 // example only, define according to your needs
 export interface BaseOptions {
-    load: 'lazy' | 'normal' | false;
-    container: HTMLElement;
+	load: 'lazy' | 'normal' | false;
+	container: HTMLElement;
 }
 // #endregion
 ```
@@ -163,7 +170,12 @@ Create `BaseModule.ts` per the file system convention and write following code, 
 
 ```TypeScript
 import type { BaseOptions } from './index.ts'; // change or delete this to the path to `index.ts` (the loader) according to real base orchestration needs
-import type { General, GeneralObject, ModuleInput as MI, Orchestratable } from './types.ts'; // change this to the real path of `types.ts`
+import type {
+	General,
+	GeneralObject,
+	ModuleInput as MI,
+	Orchestratable,
+} from './types.ts'; // change this to the real path of `types.ts`
 import type { Hook } from './utilities.ts'; // change this to the real hook type you are using (question 5)
 import type { Container } from '@needle-di/core'; // change or delete this according to your DI container needs (question)
 
@@ -175,31 +187,37 @@ export type BaseArgs = ConstructorParameters<GeneralModuleCtor>;
 export type Options<M extends ModuleInput> = Orchestratable<M, 'options'>;
 
 // add this or not depends on whether you need augmentation or not (question 4)
-export type Augmentation<M extends ModuleInput> = Orchestratable<M, '_Augmentation'>;
+export type Augmentation<M extends ModuleInput> = Orchestratable<
+	M,
+	'_Augmentation'
+>;
 
 // add, change or delete type parameters according to your type orchestration and augmentation needs (question 2, 4)
 // with base orchestrations: (Generics) extends (your base orchestration) = (your base orchestration)
 // without base orchestrations or augmentation: (Generics) extends GeneralObject = {}
-export class BaseModule<O extends BaseOptions = BaseOptions, A extends GeneralObject = {}> {
+export class BaseModule<
+	O extends BaseOptions = BaseOptions,
+	A extends GeneralObject = {},
+> {
 	declare private static readonly _BaseModuleBrand: unique symbol; // nominal marker to ensure type safety
 
-    // if you need augmentation (question 4)
+	// if you need augmentation (question 4)
 	declare _Augmentation: A;
 
-    // your orchestration fields (question 2)
-    // orchestrated field needs runtime access: (field name): (Generics)
-    // only type-level orchestration: declare (field name): (Generics)
-    options: O;
+	// your orchestration fields (question 2)
+	// orchestrated field needs runtime access: (field name): (Generics)
+	// only type-level orchestration: declare (field name): (Generics)
+	options: O;
 
-    // your lifecycle hooks, add, modify or delete according to your needs (question 3)
+	// your lifecycle hooks, add, modify or delete according to your needs (question 3)
 	onStart: Hook['subscribe'];
 	onRestart: Hook['subscribe'];
 	onDispose: Hook['subscribe'];
 
-    // constructor parameters, which should include:
-    // - DI container if you need (question 1)
-    // - all lifecycle hooks if you need (question 3)
-    // - special augmentation function: `(aug: (Augmentation Generics)) => void` if you need (question 2)
+	// constructor parameters, which should include:
+	// - DI container if you need (question 1)
+	// - all lifecycle hooks if you need (question 3)
+	// - special augmentation function: `(aug: (Augmentation Generics)) => void` if you need (question 2)
 	constructor(
 		protected container: Container,
 		options: GeneralObject,
@@ -208,10 +226,10 @@ export class BaseModule<O extends BaseOptions = BaseOptions, A extends GeneralOb
 		onRestart: Hook,
 		protected augment: (aug: A) => void,
 	) {
-        // orchestration assignments (question 2)
+		// orchestration assignments (question 2)
 		this.options = options as O;
 
-        // lifecycle hooks assignments (question 3), adjust according to the real hook subscribe function according to your needs
+		// lifecycle hooks assignments (question 3), adjust according to the real hook subscribe function according to your needs
 		this.onStart = onStart.subscribe;
 		this.onDispose = onDispose.subscribe;
 		this.onRestart = onRestart.subscribe;

@@ -13,17 +13,20 @@ export type Hook<Args extends GeneralArray = []> = {
  * Pass your arguments as the type parameter
  * @example const hook = makeHook(true) the hook will run in reverse order of subscription
  */
-export function makeHook<Args extends GeneralArray = []>(reverse: boolean = false) {
+export function makeHook<Args extends GeneralArray = []>(
+	reverse: boolean = false,
+) {
 	const result: Hook<Args> = (...args: Args) => {
 		if (reverse) {
 			const items = Array.from(result.subs).reverse();
 			items.forEach((callback) => {
 				callback(...args);
 			});
-		} else
+		} else {
 			result.subs.forEach((callback) => {
 				callback(...args);
 			});
+		}
 	};
 	result.subs = new Set();
 	result.subscribe = (callback: MatchingFunc<Args>) => {
