@@ -1,7 +1,10 @@
 ---
 name: synthkernel
-description: Structure your APP using SynthKernel, a type-safe and composable meta architecture for modular monolith development in TypeScript.
+description: Follow the standards of SynthKernel, a type-safe and highly modular architecture for modular monolith development in TypeScript.
 license: MIT
+compatibility: Requires TypeScript
+metadata:
+    - version: '1.0.0'
 ---
 
 ## About SynthKernel
@@ -40,7 +43,7 @@ It's a standard practice to turn a over-bloated module into a new loader-module 
 ## When Not to Use
 
 - You are not supposed to create or change the architecture.
-- You are developing front-end web UI which has its own conventions.
+- You are developing web UI which has its own conventions.
 - You are serving for a simple project (loc < 200) where a classical monolith is more convenient.
 
 ## Actions

@@ -5,7 +5,7 @@
     <br />
 </h1>
 
-<h4 align="center">A type safe and composable meta architecture for modular monolith development.</h4>
+<h4 align="center">A type safe and highly modular architecture for modular monolith development.</h4>
 
 <p align="center">
     <img src="https://img.shields.io/badge/%F0%9F%96%90%EF%B8%8F%20Made%20by-Humans-333333?labelColor=25C260" alt="Made by Humans">
