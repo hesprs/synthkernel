@@ -81,7 +81,13 @@ export class Module extends BaseModule<Options, Augmentation> {
 }
 ```
 
-### Step 3 Record References
+### Step 3 Load Module and Record References
+
+Now navigate to the loader file (typically `index.ts` in the same folder) and modify the modules array:
+
+```TypeScript
+const allModules = [(...ExistingModules), YourNewModule];
+```
 
 If you have write access to a project-wide memory system like `AGENTS.md`, find the `Project Architecture` section and update the tree structure to reflect your new module.
 
