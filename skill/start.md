@@ -352,9 +352,9 @@ If you have access to project-wide memory like `AGENTS.md`, modify the `Project 
 ````markdown
 ## Project Architecture
 
-This project uses SynthKernel architecture. Typical practice consists a module loader class and module classes:
+This project uses SynthKernel architecture, **you must use the `SynthKernel` skill when planning, refactoring or adding new functionalities**. Typical practice consists a module loader class and module classes:
 
-- The module loader class manages module lifecycles, orchestrates types, and behaves as an facade at of your app logic.
+- The module loader class manages module lifecycles, orchestrates types, and behaves as an facade at of your app logic. **Do not implement any business logic in the module loader class, implement only in modules.**.
 - All module classes extend a `BaseModule` class, they define APIs, register lifecycle hooks, execute actual logic, augment the loader class and wire each other via dependency injection.
 - Types are resolved via generics orchestration.
 - Modules are composed to the loader to form an APP.
