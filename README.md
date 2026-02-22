@@ -1,4 +1,6 @@
 <h1 align="center">
+    <img src="assets/logo.svg" alt="JSON Canvas Viewer logo" width="280px">
+    <br />
     SynthKernel
     <br />
 </h1>
@@ -27,7 +29,7 @@
 
 ## ❓ What is SynthKernel?
 
-SynthKernel is a low-level system design approach for making clear and structured [modular monolith](https://www.geeksforgeeks.org/system-design/what-is-a-modular-monolith/) in **TypeScript**. It combines elements of Object Oriented Programming, advanced Type Generics in TypeScript, Facade Pattern, and aims to push the philosophy of **Inversion of Control** to it's extremum.
+SynthKernel is a low-level system design approach for making clear and structured [modular monolith](https://www.geeksforgeeks.org/system-design/what-is-a-modular-monolith/) in **TypeScript**. It combines elements of _Object Oriented Programming_, _advanced Type Generics in TypeScript_, _Facade Pattern_, and aims to push the philosophy of **Inversion of Control** to it's extremum.
 
 The simplest implementation of SynthKernel consists of a **central loader** and flat **modules**. Unlike other modularity conventions that design the loader to provide interfaces and APIs, the loader in SynthKernel only manages module loading and lifecycles, all actual functionalities are achieved by modules. Modules are the actual center of the entire application - they define APIs, execute real logic, augment the the loader class and wire each other via dependency injection. The module loader behaves as a lifecycle manager and a facade between complex internal logic and the application consumer.
 
