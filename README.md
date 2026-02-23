@@ -78,7 +78,7 @@ Choose `npx` / `pnpm dlx` / `bunx` or whatever according your preference, take `
 npx skills add hesprs/synthkernel
 ```
 
-The command will scaffold and find 1 skill. Choose the only skill, then choose the coding agent and whether to install globally according to your needs. Continue the scaffolder and the skill will be installed.
+The command will scaffold and find 1 skill. Then select the coding agent, whether to install globally and installation method according to your needs. Continue the scaffolder and the skill will be installed.
 
 ## 📝 Copyright & Licenses
 
