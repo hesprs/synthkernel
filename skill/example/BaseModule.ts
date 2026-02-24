@@ -1,11 +1,6 @@
 import type { Container } from '@needle-di/core';
 import type { BaseOptions } from './index.ts';
-import type {
-	General,
-	GeneralObject,
-	ModuleInput as MI,
-	Orchestratable,
-} from './types.ts';
+import type { General, GeneralObject, ModuleInput as MI, Orchestratable } from './types.ts';
 import type { Hook } from './utilities.ts';
 
 type ModuleInput = MI<GeneralModuleCtor>;

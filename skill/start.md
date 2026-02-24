@@ -62,11 +62,10 @@ export type GeneralArray = ReadonlyArray<General>;
 export type GeneralObject = object;
 export type GeneralConstructor = new (...args: General[]) => General;
 
-type UnionToIntersection<U> =
-	(U extends General ? (k: U) => void : never) extends (
-		k: infer I,
-	) => void ? I
-		: never;
+type UnionToIntersection<U> = (U extends General ? (k: U) => void : never) extends (
+	k: infer I,
+) => void ? I
+	: never;
 
 type GeneralModuleInput =
 	| ReadonlyArray<GeneralConstructor>
@@ -76,8 +75,9 @@ export type ModuleInput<T extends GeneralConstructor> =
 	| ReadonlyArray<T>
 	| ReadonlyArray<InstanceType<T>>;
 
-type Instances<T extends GeneralModuleInput> = T extends
-	ReadonlyArray<GeneralConstructor> ? InstanceType<T[number]> : T[number];
+type Instances<T extends GeneralModuleInput> = T extends ReadonlyArray<GeneralConstructor>
+	? InstanceType<T[number]>
+	: T[number];
 
 export type Orchestratable<
 	T extends GeneralModuleInput,
@@ -170,12 +170,7 @@ Create `BaseModule.ts` per the file system convention and write following code, 
 
 ```TypeScript
 import type { BaseOptions } from './index.ts'; // change or delete this to the path to `index.ts` (the loader) according to real base orchestration needs
-import type {
-	General,
-	GeneralObject,
-	ModuleInput as MI,
-	Orchestratable,
-} from './types.ts'; // change this to the real path of `types.ts`
+import type { General, GeneralObject, ModuleInput as MI, Orchestratable } from './types.ts'; // change this to the real path of `types.ts`
 import type { Hook } from './utilities.ts'; // change this to the real hook type you are using (question 5)
 import type { Container } from '@needle-di/core'; // change or delete this according to your DI container needs (question)
 
