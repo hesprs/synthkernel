@@ -5,11 +5,10 @@ export type GeneralArray = ReadonlyArray<General>;
 export type GeneralObject = object;
 export type GeneralConstructor = new (...args: General[]) => General;
 
-type UnionToIntersection<U> =
-	(U extends General ? (k: U) => void : never) extends (
-		k: infer I,
-	) => void ? I
-		: never;
+type UnionToIntersection<U> = (U extends General ? (k: U) => void : never) extends (
+	k: infer I,
+) => void ? I
+	: never;
 
 type GeneralModuleInput =
 	| ReadonlyArray<GeneralConstructor>
@@ -19,8 +18,9 @@ export type ModuleInput<T extends GeneralConstructor> =
 	| ReadonlyArray<T>
 	| ReadonlyArray<InstanceType<T>>;
 
-type Instances<T extends GeneralModuleInput> = T extends
-	ReadonlyArray<GeneralConstructor> ? InstanceType<T[number]> : T[number];
+type Instances<T extends GeneralModuleInput> = T extends ReadonlyArray<GeneralConstructor>
+	? InstanceType<T[number]>
+	: T[number];
 
 export type Orchestratable<
 	T extends GeneralModuleInput,
