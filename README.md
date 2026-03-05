@@ -84,6 +84,6 @@ The command will scaffold and find 1 skill. Then select the coding agent, whethe
 
 Copyright ©️ 2026 Hesprs (Hēsperus)
 
-Architecture whitepaper and README licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+Architecture whitepaper and README licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 Agent skill licensed under the [MIT License](https://mit-license.org/)
