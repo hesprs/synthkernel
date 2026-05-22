@@ -1,8 +1,5 @@
 node_modules
 
-# dot files
-.vscode
-
 # Logs
 logs
 *.log
@@ -15,7 +12,6 @@ lerna-debug.log*
 # cache
 .cache
 .jupyter
-.ipynb_checkpoints
 
 # dist
 dist
