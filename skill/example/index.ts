@@ -11,17 +11,16 @@
  */
 
 import { Container } from '@needle-di/core';
-import type { Augmentation, GeneralModuleCtor, Options } from './BaseModule.ts';
+import type { Augmentation, GeneralModuleCtor, Options, GeneralModule } from './BaseModule.ts';
 import type { GeneralObject } from './types.ts';
-import { AlertDispatch } from './AlertDispatch.ts';
-import { CoreLogging } from './CoreLogging.ts';
-import { makeHook } from './utilities.ts';
+import AlertDispatch from './AlertDispatch.ts';
+import CoreLogging from './CoreLogging.ts';
 
 // #region Base Orchestrations
-export interface BaseOptions {
+export type BaseOptions = {
 	appName: string;
 	debug?: boolean;
-}
+};
 // #endregion
 
 const allModules = [CoreLogging, AlertDispatch];
@@ -31,46 +30,40 @@ type AllOptions = Options<AllModules>;
 type AllAugmentation = Augmentation<AllModules>;
 
 class PolisAlert {
-	private onDispose = makeHook(true);
-	private onStart = makeHook();
-
-	options: AllOptions;
-
+	private readonly loadedModules: Array<GeneralModule> = [];
 	container: Container;
 
-	private augment = (aug: GeneralObject) => {
+	private readonly augment = (aug: GeneralObject) => {
 		const descriptors = Object.getOwnPropertyDescriptors(aug);
 		Object.defineProperties(this, descriptors);
 	};
 
-	constructor(options: AllOptions) {
+	constructor(public options: AllOptions) {
 		this.container = new Container();
-		this.options = options;
 
 		const bind = (Module: GeneralModuleCtor) => {
 			this.container.bind({
 				provide: Module,
-				useFactory: () =>
-					new Module(
-						this.container,
-						this.options,
-						this.onStart,
-						this.onDispose,
-						this.augment,
-					),
+				useFactory: () => {
+					const module = new Module(this.container, this.options);
+					this.loadedModules.push(module);
+					return module;
+				},
 			});
 		};
 
 		allModules.forEach(bind);
-		allModules.forEach((Module: GeneralModuleCtor) => {
-			this.container.get(Module);
-		});
+		allModules.forEach((Module: GeneralModuleCtor) => this.container.get(Module));
 
-		this.onStart();
+		this.loadedModules.forEach((module) => {
+			this.augment(module.augmentation);
+			module.onStart?.();
+		});
 	}
 
 	dispose = () => {
-		this.onDispose();
+		this.loadedModules.reverse();
+		while (this.loadedModules.length) this.loadedModules.pop()?.onDispose?.();
 		this.container.unbindAll();
 	};
 }

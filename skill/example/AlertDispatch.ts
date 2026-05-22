@@ -2,32 +2,26 @@
  * AlertDispatch: Handles validation and transmission of alerts
  */
 
+import type { BaseArgs } from './BaseModule.ts';
 import type { BaseOptions } from './index.ts';
-import { type BaseArgs, BaseModule } from './BaseModule.ts';
-import { CoreLogging } from './CoreLogging.ts';
+import { BaseModule } from './BaseModule.ts';
+import CoreLogging from './CoreLogging.ts';
 
-interface Options extends BaseOptions {
+type Options = {
 	minMessageLength: number;
 	maxMessageLength: number;
-}
+} & BaseOptions;
 
-interface Augmentation {
+type Augmentation = {
 	dispatchAlert: AlertDispatch['dispatchAlert'];
-}
+};
 
-export class AlertDispatch extends BaseModule<Options, Augmentation> {
-	private logging: CoreLogging;
+export default class AlertDispatch extends BaseModule<Options, Augmentation> {
+	private readonly logging: CoreLogging;
 
 	constructor(...args: BaseArgs) {
 		super(...args);
-		this.augment({ dispatchAlert: this.dispatchAlert });
 		this.logging = this.container.get(CoreLogging);
-		this.onStart(() => {
-			this.logging.log('INFO', 'AlertDispatch initialized');
-		});
-		this.onDispose(() => {
-			this.logging.log('INFO', 'AlertDispatch disposed');
-		});
 	}
 
 	dispatchAlert = async (message: string): Promise<boolean> => {
@@ -52,10 +46,17 @@ export class AlertDispatch extends BaseModule<Options, Augmentation> {
 		return true;
 	};
 
-	private connectAlertService = async (alert: string) => {
+	private readonly connectAlertService = async (alert: string) => {
 		this.logging.log('INFO', `Dispatched: "${alert}"`);
-
-		// Simulate async connection to alerting service, like an email api
+		// Simulate async connection to alerting service, like an email API
 		await new Promise((resolve) => setTimeout(resolve, 10));
 	};
+
+	onDispose() {
+		this.logging.log('INFO', 'AlertDispatch disposed');
+	}
+	onStart() {
+		this.logging.log('INFO', 'AlertDispatch initialized');
+	}
+	augmentation = { dispatchAlert: this.dispatchAlert };
 }
