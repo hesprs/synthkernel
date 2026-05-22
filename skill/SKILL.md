@@ -1,10 +1,8 @@
 ---
 name: synthkernel
-description: Follow the standards of SynthKernel, a type-safe and highly modular architecture for modular monolith development in TypeScript.
+description: Follow the standards of SynthKernel architecture. Must use this skill when operating on any project that claims to adopt SynthKernel.
 license: MIT
-compatibility: Requires TypeScript
-metadata:
-    - version: '1.0.0'
+compatibility: TypeScript
 ---
 
 ## About SynthKernel

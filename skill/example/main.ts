@@ -1,3 +1,4 @@
+// oxlint-disable vitest/require-hook
 /**
  * PolisAlert Consumer Example
  * Demonstrates type-safe augmentation and module composition
@@ -11,8 +12,8 @@ const app = new PolisAlert({
 	debug: true,
 	logLevel: 'DEBUG',
 	maxLogs: 500,
-	minMessageLength: 1,
 	maxMessageLength: 280,
+	minMessageLength: 1,
 });
 
 // Type-safe access to augmented methods

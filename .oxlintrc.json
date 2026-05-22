@@ -1,0 +1,102 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["unicorn", "typescript", "oxc", "import", "react", "vitest"],
+	"categories": {
+		"correctness": "warn",
+		"perf": "warn",
+		"nursery": "warn",
+		"suspicious": "warn",
+		"style": "warn"
+	},
+	"rules": {
+		"typescript/prefer-readonly-parameter-types": "off",
+		"unicorn/no-array-sort": "off",
+		"unicorn/no-array-reverse": "off",
+		"typescript/no-unnecessary-condition": "off",
+		"typescript/consistent-return": "off",
+		"eslint/func-style": "off",
+		"eslint/max-statements": "off",
+		"import/no-named-export": "off",
+		"curly": ["warn", "multi"],
+		"eslint/no-ternary": "off",
+		"eslint/no-nested-ternary": "off",
+		"unicorn/no-nested-ternary": "off",
+		"typescript/array-type": ["warn", { "default": "generic" }],
+		"eslint/id-length": "off",
+		"eslint/init-declarations": "off",
+		"eslint/no-magic-numbers": "off",
+		"import/exports-last": "off",
+		"import/group-exports": "off",
+		"eslint/no-continue": "off",
+		"typescript/no-unsafe-type-assertion": "off",
+		"typescript/consistent-type-definitions": ["warn", "type"],
+		"typescript/parameter-properties": ["warn", { "prefer": "parameter-property" }],
+		"typescript/unbound-method": "off",
+		"eslint/prefer-destructuring": [
+			"warn",
+			{ "AssignmentExpression": { "array": false, "object": false } }
+		],
+		"unicorn/prefer-global-this": "off",
+		"eslint/no-new": "off",
+		"eslint/sort-imports": "off", // disable temporarily since it is glitchy
+		"eslint/no-duplicate-imports": ["warn", { "allowSeparateTypeImports": true }],
+		"eslint/new-cap": "off",
+		"typescript/consistent-type-imports": "off",
+		"react/jsx-max-depth": "off",
+		"react/react-in-jsx-scope": "off",
+		"unicorn/no-await-expression-member": "off",
+		"eslint/no-await-in-loop": "off",
+		"eslint/max-params": "off",
+		"unicorn/filename-case": [
+			"warn",
+			{
+				"cases": {
+					"kebabCase": true,
+					"camelCase": false,
+					"snakeCase": false,
+					"pascalCase": true
+				},
+				"ignore": "zh-Hans.ts"
+			}
+		],
+		"unicorn/consistent-function-scoping": "off",
+		"react/jsx-props-no-spreading": "off",
+		"import/no-unassigned-import": [
+			"warn",
+			{ "allow": ["**/*.css", "**/*.scss", "**/*.less"] }
+		],
+		"unicorn/number-literal-case": "off",
+		"eslint/no-multi-assign": "off",
+		"jest/prefer-expect-assertions": "off",
+		"vitest/prefer-expect-assertions": "off",
+		"vitest/no-importing-vitest-globals": "off",
+		"vitest/prefer-import-in-mock": "off",
+		"jest/no-untyped-mock-factory": "off",
+		"vitest/require-mock-type-parameters": "off",
+		"vitest/prefer-to-be-truthy": "off",
+		"vitest/prefer-to-be-falsy": "off",
+		"vitest/prefer-describe-function-title": "off",
+		"jest/max-expects": "off",
+		"vitest/max-expects": "off",
+		"jest/prefer-ending-with-an-expect": "off",
+		"jest/no-conditional-expect": "off",
+		"vitest/no-conditional-expect": "off",
+		"jest/require-hook": "off",
+		"vitest/prefer-called-once": "off",
+		"unicorn/no-null": "off",
+		"eslint/no-underscore-dangle": "off",
+		"typescript/no-this-alias": "off"
+	},
+	"env": {
+		"builtin": true,
+		"browser": true,
+		"node": true
+	},
+	"globals": {
+		"activeDocument": "readonly"
+	},
+	"ignorePatterns": ["**/node_modules/**", "**/dist/**"],
+	"options": {
+		"typeAware": true
+	}
+}

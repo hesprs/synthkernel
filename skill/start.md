@@ -10,9 +10,9 @@ Check your `tsconfig.json` which should contain following:
 
 ```json
 {
-	"compilerOptions": {
-		"allowImportingTsExtensions": true
-	}
+  "compilerOptions": {
+    "allowImportingTsExtensions": true
+  }
 }
 ```
 
