@@ -1,9 +1,5 @@
-/**
- * AlertDispatch: Handles validation and transmission of alerts
- */
-
-import type { BaseArgs } from './BaseModule.ts';
-import { BaseModule } from './BaseModule.ts';
+import type { BaseArgs } from 'synthkernel/simple-suite';
+import { SimpleBaseModule } from 'synthkernel/simple-suite';
 import CoreLogging from './CoreLogging.ts';
 
 type Options = {
@@ -15,7 +11,7 @@ type Augmentation = {
 	dispatchAlert: AlertDispatch['dispatchAlert'];
 };
 
-export default class AlertDispatch extends BaseModule<Options, Augmentation> {
+export default class AlertDispatch extends SimpleBaseModule<Options, Augmentation> {
 	private readonly logging: CoreLogging;
 	private readonly unsub: () => void;
 

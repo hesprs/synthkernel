@@ -79,4 +79,4 @@ Copyright ©️ 2026 Hesprs (Hēsperus)
 
 Architecture whitepaper and README licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
-Agent skill licensed under the [MIT License](https://mit-license.org/)
+Agent skill and `synthkernel` npm package licensed under the [MIT License](https://mit-license.org/)
