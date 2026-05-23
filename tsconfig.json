@@ -3,8 +3,8 @@
 		"paths": {
 			"@/*": ["./src/*"],
 			"@": ["./src"],
-			"synthkernel": ["./dist"],
-			"synthkernel/*": ["./dist/*"]
+			"synthkernel": ["./src"],
+			"synthkernel/*": ["./src/*"]
 		},
 		"allowSyntheticDefaultImports": true,
 		"target": "ESNext",
