@@ -2,7 +2,9 @@
 	"compilerOptions": {
 		"paths": {
 			"@/*": ["./src/*"],
-			"@": ["./src"]
+			"@": ["./src"],
+			"synthkernel": ["./dist"],
+			"synthkernel/*": ["./dist/*"]
 		},
 		"allowSyntheticDefaultImports": true,
 		"target": "ESNext",

@@ -1,15 +1,15 @@
-import type { Orchestratable, ModuleInput as MI } from 'synthkernel';
-import type { Container } from 'synthkernel/di';
+import { Container } from '@needle-di/core';
+import type { Orchestratable, ModuleInput as MI } from './types';
 
 type ModuleInput = MI<GeneralModuleCtor>;
-export type BaseArgs = ConstructorParameters<typeof BaseModule>;
-export type GeneralModule = BaseModule<any, any>;
+export type BaseArgs = ConstructorParameters<typeof SimpleBaseModule>;
+export type GeneralModule = SimpleBaseModule<any, any>;
 export type GeneralModuleCtor = new (...args: BaseArgs) => GeneralModule;
 
 export type Options<M extends ModuleInput> = Orchestratable<M, 'options'>;
 export type Augmentation<M extends ModuleInput> = Orchestratable<M, 'augmentation'>;
 
-export abstract class BaseModule<O extends object = {}, A extends object = {}> {
+export abstract class SimpleBaseModule<O extends object = {}, A extends object = {}> {
 	options: O;
 
 	constructor(

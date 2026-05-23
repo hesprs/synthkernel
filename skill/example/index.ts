@@ -10,30 +10,28 @@
  *   augmentation: Module-contributed methods and properties exposed to consumers
  */
 
-import { Container } from '@needle-di/core';
+import type { AugmentedConstructor } from 'synthkernel';
+import { Container } from 'synthkernel/di';
 import type { Augmentation, GeneralModuleCtor, Options, GeneralModule } from './BaseModule.ts';
-import type { GeneralObject } from './types.ts';
 import AlertDispatch from './AlertDispatch.ts';
 import CoreLogging from './CoreLogging.ts';
 
-// #region Base Orchestrations
 export type BaseOptions = {
 	appName: string;
 	debug?: boolean;
 };
-// #endregion
 
 const allModules = [CoreLogging, AlertDispatch];
 type AllModules = typeof allModules;
 
-type AllOptions = Options<AllModules>;
+type AllOptions = Options<AllModules> & BaseOptions;
 type AllAugmentation = Augmentation<AllModules>;
 
 class PolisAlert {
 	private readonly loadedModules: Array<GeneralModule> = [];
 	container: Container;
 
-	private readonly augment = (aug: GeneralObject) => {
+	private readonly augment = (aug: object) => {
 		const descriptors = Object.getOwnPropertyDescriptors(aug);
 		Object.defineProperties(this, descriptors);
 	};
@@ -68,7 +66,4 @@ class PolisAlert {
 	};
 }
 
-type LoaderType = new (
-	...args: ConstructorParameters<typeof PolisAlert>
-) => PolisAlert & AllAugmentation;
-export default PolisAlert as LoaderType;
+export default PolisAlert as AugmentedConstructor<typeof PolisAlert, AllAugmentation>;

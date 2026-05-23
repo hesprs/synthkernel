@@ -1,10 +1,6 @@
-/**
- * CoreLogging: Provides centralized logging functionality and audit trail
- */
-
 import { hook } from 'synthkernel';
+import { SimpleBaseModule } from 'synthkernel/simple-suite';
 import type { BaseOptions } from './index.ts';
-import { BaseModule } from './BaseModule.ts';
 
 // Helper to enforce hierarchy
 const LEVELS = { DEBUG: 0, ERROR: 3, INFO: 1, WARN: 2 } as const;
@@ -26,7 +22,7 @@ type LogEntry = {
 	message: string;
 };
 
-export default class CoreLogging extends BaseModule<Options, Augmentation> {
+export default class CoreLogging extends SimpleBaseModule<Options, Augmentation> {
 	private logs: Array<LogEntry> = [];
 	onOverflow = hook<[LogEntry]>(); // A hook to notify when log overflow occurs for other modules to subscribe to
 

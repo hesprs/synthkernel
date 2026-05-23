@@ -85,7 +85,8 @@
 		"vitest/prefer-called-once": "off",
 		"unicorn/no-null": "off",
 		"eslint/no-underscore-dangle": "off",
-		"typescript/no-this-alias": "off"
+		"typescript/no-this-alias": "off",
+		"vitest/require-top-level-describe": "off"
 	},
 	"env": {
 		"builtin": true,
