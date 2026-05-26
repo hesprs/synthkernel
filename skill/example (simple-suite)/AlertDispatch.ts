@@ -2,18 +2,13 @@ import type { BaseArgs } from 'synthkernel/simple-suite';
 import { SimpleBaseModule } from 'synthkernel/simple-suite';
 import CoreLogging from './CoreLogging.ts';
 
-type Options = {
-	minMessageLength: number;
-	maxMessageLength: number;
-};
-
-type Augmentation = {
-	dispatchAlert: AlertDispatch['dispatchAlert'];
-};
-
-export default class AlertDispatch extends SimpleBaseModule<Options, Augmentation> {
+export default class AlertDispatch extends SimpleBaseModule {
 	private readonly logging: CoreLogging;
 	private readonly unsub: () => void;
+	declare options: {
+		minMessageLength: number;
+		maxMessageLength: number;
+	};
 
 	constructor(...args: BaseArgs) {
 		super(...args);

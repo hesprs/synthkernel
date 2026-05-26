@@ -1,25 +1,20 @@
 import type { Orchestratable, ModuleInput as MI } from 'synthkernel';
 import type { Container } from 'synthkernel/di';
 
-type ModuleInput = MI<GeneralModuleCtor>;
-export type BaseArgs = ConstructorParameters<typeof BaseModule>;
-export type GeneralModule = BaseModule<any, any>;
-export type GeneralModuleCtor = new (...args: BaseArgs) => GeneralModule;
+type ModuleInput = MI<BaseModuleCtor>;
+export type BaseArgs = ConstructorParameters<BaseModuleCtor>;
+export type BaseModuleCtor = typeof BaseModule;
 
 export type Options<M extends ModuleInput> = Orchestratable<M, 'options'>;
 export type Augmentation<M extends ModuleInput> = Orchestratable<M, 'augmentation'>;
 
-export abstract class BaseModule<O extends object = {}, A extends object = {}> {
-	options: O;
-
+export class BaseModule {
 	constructor(
 		protected container: Container,
-		options: object,
-	) {
-		this.options = options as O;
-	}
+		public options: object,
+	) {}
 
-	abstract onStart?(): void;
-	abstract onDispose?(): void;
-	abstract augmentation: A;
+	onStart(): void {}
+	onDispose(): void {}
+	readonly augmentation: object = {};
 }
