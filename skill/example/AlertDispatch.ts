@@ -6,16 +6,7 @@ import type { BaseArgs } from './BaseModule.ts';
 import { BaseModule } from './BaseModule.ts';
 import CoreLogging from './CoreLogging.ts';
 
-type Options = {
-	minMessageLength: number;
-	maxMessageLength: number;
-};
-
-type Augmentation = {
-	dispatchAlert: AlertDispatch['dispatchAlert'];
-};
-
-export default class AlertDispatch extends BaseModule<Options, Augmentation> {
+export default class AlertDispatch extends BaseModule {
 	private readonly logging: CoreLogging;
 	private readonly unsub: () => void;
 
@@ -63,4 +54,8 @@ export default class AlertDispatch extends BaseModule<Options, Augmentation> {
 		this.logging.log('INFO', 'AlertDispatch initialized');
 	}
 	augmentation = { dispatchAlert: this.dispatchAlert };
+	declare options: {
+		minMessageLength: number;
+		maxMessageLength: number;
+	};
 }

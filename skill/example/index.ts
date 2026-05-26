@@ -12,7 +12,7 @@
 
 import type { AugmentedConstructor } from 'synthkernel';
 import { Container } from 'synthkernel/di';
-import type { Augmentation, GeneralModuleCtor, Options, GeneralModule } from './BaseModule.ts';
+import type { Augmentation, BaseModule, Options, BaseModuleCtor } from './BaseModule.ts';
 import AlertDispatch from './AlertDispatch.ts';
 import CoreLogging from './CoreLogging.ts';
 
@@ -28,7 +28,7 @@ type AllOptions = Options<AllModules> & BaseOptions;
 type AllAugmentation = Augmentation<AllModules>;
 
 class PolisAlert {
-	private readonly loadedModules: Array<GeneralModule> = [];
+	private readonly loadedModules: Array<BaseModule> = [];
 	container: Container;
 
 	private readonly augment = (aug: object) => {
@@ -39,7 +39,7 @@ class PolisAlert {
 	constructor(public options: AllOptions) {
 		this.container = new Container();
 
-		const bind = (Module: GeneralModuleCtor) => {
+		const bind = (Module: BaseModuleCtor) => {
 			this.container.bind({
 				provide: Module,
 				useFactory: () => {
@@ -51,17 +51,17 @@ class PolisAlert {
 		};
 
 		allModules.forEach(bind);
-		allModules.forEach((Module: GeneralModuleCtor) => this.container.get(Module));
+		allModules.forEach((Module: BaseModuleCtor) => this.container.get(Module));
 
 		this.loadedModules.forEach((module) => {
 			this.augment(module.augmentation);
-			module.onStart?.();
+			module.onStart();
 		});
 	}
 
 	dispose = () => {
 		this.loadedModules.reverse();
-		while (this.loadedModules.length) this.loadedModules.pop()?.onDispose?.();
+		while (this.loadedModules.length) this.loadedModules.pop()?.onDispose();
 		this.container.unbindAll();
 	};
 }

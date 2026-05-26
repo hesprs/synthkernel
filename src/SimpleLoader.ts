@@ -1,8 +1,8 @@
 import { Container } from '@needle-di/core';
-import type { GeneralModuleCtor, GeneralModule } from './SimpleBaseModule';
+import type { SinpleBaseModuleCtor, SimpleBaseModule } from './SimpleBaseModule';
 
 export default class SimpleLoader<A extends object> {
-	private readonly loadedModules: Array<GeneralModule> = [];
+	private readonly loadedModules: Array<SimpleBaseModule> = [];
 	container: Container;
 
 	private readonly augment = (aug: object) => {
@@ -12,11 +12,11 @@ export default class SimpleLoader<A extends object> {
 
 	constructor(
 		public options: A,
-		allModules: Array<GeneralModuleCtor>,
+		allModules: Array<SinpleBaseModuleCtor>,
 	) {
 		this.container = new Container();
 
-		const bind = (Module: GeneralModuleCtor) => {
+		const bind = (Module: SinpleBaseModuleCtor) => {
 			this.container.bind({
 				provide: Module,
 				useFactory: () => {
@@ -28,7 +28,7 @@ export default class SimpleLoader<A extends object> {
 		};
 
 		allModules.forEach(bind);
-		allModules.forEach((Module: GeneralModuleCtor) => this.container.get(Module));
+		allModules.forEach((Module: SinpleBaseModuleCtor) => this.container.get(Module));
 
 		this.loadedModules.forEach((module) => {
 			this.augment(module.augmentation);

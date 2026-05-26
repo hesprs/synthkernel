@@ -10,25 +10,19 @@ import { BaseModule } from './BaseModule.ts';
 const LEVELS = { DEBUG: 0, ERROR: 3, INFO: 1, WARN: 2 } as const;
 type Level = keyof typeof LEVELS;
 
-type Options = {
-	logLevel: Level;
-	maxLogs?: number;
-} & BaseOptions;
-
-type Augmentation = {
-	log: CoreLogging['log'];
-	logs: ReadonlyArray<LogEntry>;
-};
-
 type LogEntry = {
 	timestamp: number;
 	level: string;
 	message: string;
 };
 
-export default class CoreLogging extends BaseModule<Options, Augmentation> {
+export default class CoreLogging extends BaseModule {
 	private logs: Array<LogEntry> = [];
 	onOverflow = hook<[LogEntry]>(); // A hook to notify when log overflow occurs for other modules to subscribe to
+	declare options: {
+		logLevel: Level;
+		maxLogs?: number;
+	} & BaseOptions;
 
 	log = (level: Level, message: string) => {
 		const currentLevel = LEVELS[level];
@@ -55,13 +49,8 @@ export default class CoreLogging extends BaseModule<Options, Augmentation> {
 		this.logs = [];
 		this.onOverflow.dispose();
 	}
-	get augmentation() {
-		const self = this;
-		return {
-			log: this.log,
-			get logs(): ReadonlyArray<LogEntry> {
-				return Object.freeze([...self.logs]);
-			},
-		};
-	}
+	augmentation = {
+		log: this.log,
+		logs: this.logs,
+	};
 }
