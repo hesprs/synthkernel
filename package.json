@@ -10,8 +10,19 @@
 		"modular-monolith",
 		"typescript"
 	],
+	"homepage": "https://github.com/hesprs/synthkernel",
+	"bugs": {
+		"url": "https://github.com/hesprs/synthkernel/issues"
+	},
 	"license": "MIT",
-	"author": "Hēsperus",
+	"author": {
+		"name": "Hēsperus",
+		"email": "hesprs@outlook.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/hesprs/synthkernel.git"
+	},
 	"files": [
 		"./dist"
 	],
