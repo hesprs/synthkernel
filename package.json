@@ -1,6 +1,6 @@
 {
 	"name": "synthkernel",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "A type-safe and composable meta architecture for modular monolith development.",
 	"keywords": [
 		"agent-skills",
@@ -12,14 +12,32 @@
 	],
 	"license": "MIT",
 	"author": "Hēsperus",
+	"files": [
+		"./dist"
+	],
 	"type": "module",
 	"sideEffects": false,
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
-		".": "./dist/index.js",
-		"./di": "./dist/di.js",
-		"./simple-suite": "./dist/simple-suite.js",
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./di": {
+			"import": "./dist/di.js",
+			"types": "./dist/di.d.ts"
+		},
+		"./simple-suite": {
+			"import": "./dist/simple-suite.js",
+			"types": "./dist/simple-suite.d.ts"
+		},
 		"./package.json": "./package.json"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
 	},
 	"scripts": {
 		"build": "tsdown && oxfmt package.json",
@@ -32,10 +50,10 @@
 	},
 	"devDependencies": {
 		"@types/node": "^25.9.1",
-		"oxfmt": "^0.51.0",
-		"oxlint": "^1.66.0",
+		"oxfmt": "^0.52.0",
+		"oxlint": "^1.67.0",
 		"oxlint-tsgolint": "^0.23.0",
-		"tsdown": "^0.22.0",
+		"tsdown": "^0.22.1",
 		"tslab": "^1.0.22",
 		"typescript": "^6.0.3",
 		"vitest": "^4.1.7"
