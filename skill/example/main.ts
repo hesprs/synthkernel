@@ -9,7 +9,6 @@ import PolisAlert from './index.ts';
 // Create the loader with orchestrated options from all modules
 const app = new PolisAlert({
 	appName: 'PolisAlert',
-	debug: true,
 	logLevel: 'DEBUG',
 	maxLogs: 500,
 	maxMessageLength: 280,

@@ -1,18 +1,6 @@
-/**
- * PolisAlert Loader
- * Dependency injection enabled: Yes (@needle-di/core)
- * Augmentation enabled: Yes
- * Lifecycle hooks:
- *   onStart: Fired when all modules are loaded and initialized
- *   onDispose: Fired when the application is disposed
- * Orchestrations:
- *   options: Module-contributed configuration options
- *   augmentation: Module-contributed methods and properties exposed to consumers
- */
-
-import type { AugmentedConstructor } from 'synthkernel';
-import { Container } from 'synthkernel/di';
-import type { Augmentation, BaseModule, Options, BaseModuleCtor } from './BaseModule.ts';
+import type { MergeSingleKey, Context } from 'synthkernel';
+import { createContext } from 'synthkernel';
+import type { Level, LogEntry } from './CoreLogging.ts';
 import AlertDispatch from './AlertDispatch.ts';
 import CoreLogging from './CoreLogging.ts';
 
@@ -21,49 +9,33 @@ export type BaseOptions = {
 	debug?: boolean;
 };
 
-const allModules = [CoreLogging, AlertDispatch];
+const allModules = [CoreLogging, AlertDispatch] as const;
 type AllModules = typeof allModules;
 
-type AllOptions = Options<AllModules> & BaseOptions;
-type AllAugmentation = Augmentation<AllModules>;
-
 class PolisAlert {
-	private readonly loadedModules: Array<BaseModule> = [];
-	container: Container;
+	private ctx?: Context<AllModules, 'options'>;
 
-	private readonly augment = (aug: object) => {
-		const descriptors = Object.getOwnPropertyDescriptors(aug);
-		Object.defineProperties(this, descriptors);
-	};
+	dispatchAlert: (message: string) => Promise<boolean>;
+	log: (level: Level, message: string) => void;
+	logs: Array<LogEntry>;
 
-	constructor(public options: AllOptions) {
-		this.container = new Container();
-
-		const bind = (Module: BaseModuleCtor) => {
-			this.container.bind({
-				provide: Module,
-				useFactory: () => {
-					const module = new Module(this.container, this.options);
-					this.loadedModules.push(module);
-					return module;
-				},
-			});
-		};
-
-		allModules.forEach(bind);
-		allModules.forEach((Module: BaseModuleCtor) => this.container.get(Module));
-
-		this.loadedModules.forEach((module) => {
-			this.augment(module.augmentation);
-			module.onStart();
+	constructor(public options: MergeSingleKey<AllModules, 'options'>) {
+		this.ctx = createContext(allModules, {
+			assign: { options },
+			mergeKeys: ['options', 'root'],
 		});
+		for (const ctor of allModules) this.ctx.__getModule__(ctor).onStart();
+
+		// Augmentation
+		this.dispatchAlert = this.ctx.dispatchAlert;
+		this.log = this.ctx.log;
+		this.logs = this.ctx.logs;
 	}
 
 	dispose = () => {
-		this.loadedModules.reverse();
-		while (this.loadedModules.length) this.loadedModules.pop()?.onDispose();
-		this.container.unbindAll();
+		for (const ctor of allModules.toReversed()) this.ctx?.__getModule__(ctor).onDispose();
+		this.ctx = undefined;
 	};
 }
 
-export default PolisAlert as AugmentedConstructor<typeof PolisAlert, AllAugmentation>;
+export default PolisAlert;

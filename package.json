@@ -31,21 +31,6 @@
 	"main": "./dist/index.js",
 	"module": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"exports": {
-		".": {
-			"import": "./dist/index.js",
-			"types": "./dist/index.d.ts"
-		},
-		"./di": {
-			"import": "./dist/di.js",
-			"types": "./dist/di.d.ts"
-		},
-		"./simple-suite": {
-			"import": "./dist/simple-suite.js",
-			"types": "./dist/simple-suite.d.ts"
-		},
-		"./package.json": "./package.json"
-	},
 	"publishConfig": {
 		"access": "public",
 		"provenance": true

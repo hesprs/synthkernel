@@ -2,37 +2,35 @@
  * AlertDispatch: Handles validation and transmission of alerts
  */
 
-import type { BaseArgs } from './BaseModule.ts';
-import { BaseModule } from './BaseModule.ts';
-import CoreLogging from './CoreLogging.ts';
+import type { Hook } from 'synthkernel';
+import type { LogEntry, Level } from './CoreLogging.ts';
 
-export default class AlertDispatch extends BaseModule {
-	private readonly logging: CoreLogging;
+export default class AlertDispatch {
 	private readonly unsub: () => void;
 
-	constructor(...args: BaseArgs) {
-		super(...args);
-		this.logging = this.container.get(CoreLogging);
-		this.unsub = this.logging.onOverflow.subscribe((log) =>
+	constructor(
+		private readonly ctx: {
+			log: (level: Level, msg: string) => void;
+			onLogOverflow: Hook<[LogEntry]>;
+		},
+	) {
+		this.unsub = ctx.onLogOverflow.subscribe((log) =>
 			this.dispatchAlert(`Log overflow: ${JSON.stringify(log)}`),
 		);
 	}
 
 	dispatchAlert = async (message: string): Promise<boolean> => {
-		this.logging.log('INFO', `Attempted dispatch: "${message}"`);
+		this.ctx.log('INFO', `Attempted dispatch: "${message}"`);
 		const { minMessageLength, maxMessageLength } = this.options;
 		if (message.length < minMessageLength) {
-			this.logging.log(
+			this.ctx.log(
 				'ERROR',
 				`Validation failed: message too short (min: ${minMessageLength})`,
 			);
 			return false;
 		}
 		if (message.length > maxMessageLength) {
-			this.logging.log(
-				'ERROR',
-				`Validation failed: message too long (max: ${maxMessageLength})`,
-			);
+			this.ctx.log('ERROR', `Validation failed: message too long (max: ${maxMessageLength})`);
 			return false;
 		}
 
@@ -41,19 +39,19 @@ export default class AlertDispatch extends BaseModule {
 	};
 
 	private readonly connectAlertService = async (alert: string) => {
-		this.logging.log('INFO', `Dispatched: "${alert}"`);
+		this.ctx.log('INFO', `Dispatched: "${alert}"`);
 		// Simulate async connection to alerting service, like an email API
 		await new Promise((resolve) => setTimeout(resolve, 10));
 	};
 
 	onDispose() {
 		this.unsub();
-		this.logging.log('INFO', 'AlertDispatch disposed');
+		this.ctx.log('INFO', 'AlertDispatch disposed');
 	}
 	onStart() {
-		this.logging.log('INFO', 'AlertDispatch initialized');
+		this.ctx.log('INFO', 'AlertDispatch initialized');
 	}
-	augmentation = { dispatchAlert: this.dispatchAlert };
+	root = { dispatchAlert: this.dispatchAlert };
 	declare options: {
 		minMessageLength: number;
 		maxMessageLength: number;
