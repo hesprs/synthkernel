@@ -86,7 +86,8 @@
 		"unicorn/no-null": "off",
 		"eslint/no-underscore-dangle": "off",
 		"typescript/no-this-alias": "off",
-		"vitest/require-top-level-describe": "off"
+		"vitest/require-top-level-describe": "off",
+		"typescript/no-unnecessary-type-parameters": "off"
 	},
 	"env": {
 		"builtin": true,
