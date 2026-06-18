@@ -1,6 +1,6 @@
 {
 	"name": "synthkernel",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"description": "A type-safe and composable meta architecture for modular monolith development.",
 	"keywords": [
 		"agent-skills",
