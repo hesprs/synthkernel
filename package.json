@@ -41,9 +41,6 @@
 		"lint": "oxlint --fix && oxfmt",
 		"check": "tsc && oxlint && oxfmt --check"
 	},
-	"dependencies": {
-		"@needle-di/core": "^1.1.2"
-	},
 	"devDependencies": {
 		"@types/node": "^25.9.1",
 		"oxfmt": "^0.52.0",

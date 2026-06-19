@@ -206,10 +206,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      '@needle-di/core':
-        specifier: ^1.1.2
-        version: 1.1.2
     devDependencies:
       '@types/node':
         specifier: ^25.9.1
@@ -286,9 +282,6 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
-
-  '@needle-di/core@1.1.2':
-    resolution: {integrity: sha512-9CVnXjK33JeqUwAz5k/D+ti4ZfJ17m5AXsUcOwErbQ8baTNDPt1erVFGjipxxwcUj86Oxap3dALz6U70xsUsFg==}
 
   '@oxc-project/types@0.132.0':
     resolution: {integrity: sha512-FESMOxil5Se014ui/Eq8fT5uHJo6nIRwH0PfJrZJXs6Gek3ZVFOrpUv3YIZT20m+extU98Hg1Ym72U58rlsxUQ==}
@@ -1463,8 +1456,6 @@ snapshots:
       '@emnapi/runtime': 1.10.0
       '@tybys/wasm-util': 0.10.2
     optional: true
-
-  '@needle-di/core@1.1.2': {}
 
   '@oxc-project/types@0.132.0': {}
 
