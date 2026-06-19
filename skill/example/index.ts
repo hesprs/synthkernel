@@ -13,7 +13,7 @@ const allModules = [CoreLogging, AlertDispatch] as const;
 type AllModules = typeof allModules;
 
 class PolisAlert {
-	private ctx?: Context<AllModules, 'options'>;
+	private ctx?: Context<AllModules, 'options' | 'root'>;
 
 	dispatchAlert: (message: string) => Promise<boolean>;
 	log: (level: Level, message: string) => void;
