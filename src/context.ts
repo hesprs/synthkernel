@@ -79,6 +79,7 @@ export type Context<
 	__addModule__: <N extends ModuleConstructor<MergeResult<[...M, N], K, Pr, Po>>>(
 		newModule: N,
 	) => Context<[...M, N], K, Pr, Po>;
+	__assign__: (obj: Partial<MergeResult<M, K, Pr, Po>>) => Context<M, K, Pr, Po>;
 };
 
 const ROOT_KEY = 'root';
@@ -91,12 +92,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 function assignShallow(target: Record<string, unknown>, key: string, value: unknown) {
 	if (value === undefined) return target;
 	const current = target[key];
-	target[key] =
-		isPlainObject(current) && isPlainObject(value)
-			? { ...current, ...value }
-			: isPlainObject(value)
-				? { ...value }
-				: value;
+	if (isPlainObject(current) && isPlainObject(value)) {
+		Object.assign(current, value);
+		target[key] = current;
+	} else target[key] = value;
 	return target;
 }
 
@@ -145,7 +144,6 @@ export default function createContext<
 	options: {
 		preMerge?: Pr;
 		postMerge?: Po;
-		assign?: Partial<MergeResult<M, K, Pr, Po>>;
 		mergeKeys: ReadonlyArray<K>;
 		injectKeys?: ReadonlyArray<I>;
 	},
@@ -169,7 +167,6 @@ export default function createContext<
 
 	const finalizeContext = () => {
 		mergeShallow(context, options.postMerge);
-		mergeShallow(context, options.assign);
 		injectContext();
 	};
 
@@ -183,7 +180,10 @@ export default function createContext<
 
 	const injectContext = () => {
 		for (const instance of instances)
-			for (const key of injectKeys) instance[key] = key === ROOT_KEY ? context : context[key];
+			for (const key of injectKeys) {
+				if (context[key] === undefined) context[key] = {};
+				instance[key] = key === ROOT_KEY ? context : context[key];
+			}
 	};
 
 	Object.defineProperties(context, {
@@ -196,6 +196,10 @@ export default function createContext<
 				finalizeContext();
 				return context as Context<[...M, N], K, Pr, Po>;
 			},
+		},
+		__assign__: {
+			enumerable: false,
+			value: (obj: Partial<MergeResult<M, K, Pr, Po>>) => mergeShallow(context, obj),
 		},
 		__getModule__: {
 			enumerable: false,

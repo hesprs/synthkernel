@@ -1,10 +1,11 @@
+// oxlint-disable unicorn/no-useless-spread : spread is needed to avoid mutating the set while iterating
+
 type RefMatchingFunc<T> = (newValue: T, oldValue: T) => void;
 export type Ref<T> = {
 	(): T;
 	(newValue: T): void;
-	subscribe(func: RefMatchingFunc<T>): () => void;
+	subscribe(func: RefMatchingFunc<T>, options?: { immediate?: boolean }): () => void;
 	unsubscribe(func: RefMatchingFunc<T>): void;
-	dispose(): void;
 };
 type RefOptions<T> = { equals?: (newValue: T, oldValue: T) => boolean };
 
@@ -20,16 +21,14 @@ export function ref<T>(initial: T, options?: RefOptions<T>): Ref<T> {
 		if (equals(newValue, value)) return;
 		const oldValue = value;
 		value = newValue;
-		// Spread is needed to avoid mutating the set while iterating
-		// oxlint-disable-next-line unicorn/no-useless-spread
 		for (const callback of [...subs]) callback(newValue, oldValue);
 	}) as Ref<T>;
-	result.subscribe = (callback: RefMatchingFunc<T>) => {
+	result.subscribe = (callback, ops) => {
 		subs.add(callback);
+		if (ops?.immediate) callback(value, value);
 		return () => result.unsubscribe(callback);
 	};
-	result.unsubscribe = (callback: RefMatchingFunc<T>) => subs.delete(callback);
-	result.dispose = () => subs.clear();
+	result.unsubscribe = (callback) => subs.delete(callback);
 	return result;
 }
 
@@ -39,22 +38,18 @@ export type Hook<Args extends GeneralArray = []> = {
 	(...args: Args): void;
 	subscribe(callback: HookMatchingFunc<Args>): () => void;
 	unsubscribe(callback: HookMatchingFunc<Args>): void;
-	dispose(): void;
 };
 
 export function hook<Args extends GeneralArray = []>(): Hook<Args> {
 	const subs = new Set<HookMatchingFunc<Args>>();
 	const result: Hook<Args> = (...args: Args) => {
-		// Spread is needed to avoid mutating the set while iterating
-		// oxlint-disable-next-line unicorn/no-useless-spread
 		for (const callback of [...subs]) callback(...args);
 	};
-	result.subscribe = (callback: HookMatchingFunc<Args>) => {
+	result.subscribe = (callback) => {
 		subs.add(callback);
 		return () => result.unsubscribe(callback);
 	};
-	result.unsubscribe = (callback: HookMatchingFunc<Args>) => subs.delete(callback);
-	result.dispose = () => subs.clear();
+	result.unsubscribe = (callback) => subs.delete(callback);
 	return result;
 }
 
@@ -62,7 +57,7 @@ let activeTracker: ((ref: Trackable) => void) | undefined;
 type Trackable = Ref<any> | Computed<any>;
 export type Computed<T> = {
 	(): T;
-	subscribe(func: RefMatchingFunc<T>): () => void;
+	subscribe(func: RefMatchingFunc<T>, options?: { immediate?: boolean }): () => void;
 	unsubscribe(func: RefMatchingFunc<T>): void;
 	dispose(): void;
 };
@@ -99,14 +94,14 @@ export function computed<T>(getter: () => T, options?: ComputedOptions<T>): Comp
 		activeTracker = prev;
 	}
 	const cleanup = deps.map((dep) => dep.subscribe(update));
-	result.subscribe = (cb) => {
+	result.subscribe = (cb, ops) => {
 		subs.add(cb);
+		if (ops?.immediate) cb(value, value);
 		return () => result.unsubscribe(cb);
 	};
 	result.unsubscribe = (cb) => subs.delete(cb);
 	result.dispose = () => {
 		while (cleanup.length) cleanup.pop()!();
-		subs.clear();
 	};
 	return result;
 }

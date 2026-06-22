@@ -20,9 +20,8 @@ class PolisAlert {
 	logs: Array<LogEntry>;
 
 	constructor(public options: MergeSingleKey<AllModules, 'options'>) {
-		this.ctx = createContext(allModules, {
-			assign: { options },
-			mergeKeys: ['options', 'root'],
+		this.ctx = createContext(allModules, { mergeKeys: ['options', 'root'] }).__assign__({
+			options,
 		});
 		for (const ctor of allModules) this.ctx.__getModule__(ctor).onStart();
 

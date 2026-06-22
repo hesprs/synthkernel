@@ -28,19 +28,6 @@ test('ref skips equal updates and supports custom equality', () => {
 	expect(events).toStrictEqual([[2, 1]]);
 });
 
-test('ref dispose clears all subscribers', () => {
-	const value = ref(0);
-	let calls = 0;
-	value.subscribe(() => {
-		calls += 1;
-	});
-
-	value.dispose();
-	value(1);
-
-	expect(calls).toBe(0);
-});
-
 test('hook publishes to subscribers', () => {
 	const emit = hook<[string, number]>();
 	const events: Array<[string, number]> = [];
@@ -59,19 +46,6 @@ test('hook publishes to subscribers', () => {
 		['a', 1],
 		['b', 2],
 	]);
-});
-
-test('hook dispose clears all subscribers', () => {
-	const emit = hook();
-	let calls = 0;
-	emit.subscribe(() => {
-		calls += 1;
-	});
-
-	emit.dispose();
-	emit();
-
-	expect(calls).toBe(0);
 });
 
 test('computed tracks refs automatically', () => {
