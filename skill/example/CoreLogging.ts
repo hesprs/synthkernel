@@ -46,7 +46,6 @@ export default class CoreLogging {
 	onDispose(): void {
 		this.log('INFO', 'CoreLogging disposed');
 		this.logs = [];
-		this.onOverflow.dispose();
 	}
 	root = {
 		log: this.log,

@@ -38,8 +38,8 @@
 	"scripts": {
 		"build": "tsdown && oxfmt package.json",
 		"test": "vitest run",
-		"lint": "oxlint --fix && oxfmt",
-		"check": "tsc && oxlint && oxfmt --check"
+		"lint": "oxlint --fix --silent && oxfmt",
+		"check": "oxlint --type-check --format agent && oxfmt --check"
 	},
 	"devDependencies": {
 		"@types/node": "^25.9.1",
