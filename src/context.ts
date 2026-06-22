@@ -1,15 +1,9 @@
 type General = any;
 type GeneralObject = object;
-type GeneralConstructor =
-	| (new (...args: Array<General>) => General)
-	| (abstract new (...args: Array<General>) => General);
+type GeneralConstructor = new (...args: Array<General>) => General;
 type ModuleConstructor<C extends object> = new (context: C) => General;
 
 type GeneralModuleInput = ReadonlyArray<GeneralConstructor> | ReadonlyArray<GeneralObject>;
-
-export type ModuleInput<T extends GeneralConstructor> =
-	| ReadonlyArray<T>
-	| ReadonlyArray<InstanceType<T>>;
 
 type IsPlainObject<T> = T extends object
 	? T extends Function | Date | RegExp | Array<any> | Map<any, any> | Set<any>
@@ -76,7 +70,7 @@ export type Context<
 > = MergeResult<M, K, Pr, Po> & {
 	__modules__: WeakMap<M[number], InstanceType<M[number]>>;
 	__getModule__: <C extends M[number]>(ctor: C) => InstanceType<C>;
-	__addModule__: <N extends ModuleConstructor<MergeResult<[...M, N], K, Pr, Po>>>(
+	__addModule__: <N extends ModuleConstructor<Context<[...M, N], K, Pr, Po>>>(
 		newModule: N,
 	) => Context<[...M, N], K, Pr, Po>;
 	__assign__: (obj: Partial<MergeResult<M, K, Pr, Po>>) => Context<M, K, Pr, Po>;
@@ -127,25 +121,23 @@ function mergeShallow(target: Record<string, unknown>, source: unknown) {
  * @param options Context build options.
  * @param options.preMerge Values merged before module construction.
  * @param options.postMerge Values merged after module merges.
- * @param options.assign Final values assigned after all other merges.
  * @param options.mergeKeys Instance keys merged into context.
  * @param options.injectKeys Instance keys updated from final context. Defaults to
  * `mergeKeys`.
  * @returns Context object containing merged values plus module helper methods.
  */
 export default function createContext<
-	Po extends object,
-	Pr extends object,
 	M extends ReadonlyArray<ModuleConstructor<Context<M, K, Pr, Po>>>,
 	K extends Keys<InstanceEach<M>[number]>,
-	I extends K = K,
+	Po extends object = {},
+	Pr extends object = {},
 >(
 	classes: M,
 	options: {
 		preMerge?: Pr;
 		postMerge?: Po;
 		mergeKeys: ReadonlyArray<K>;
-		injectKeys?: ReadonlyArray<I>;
+		injectKeys?: ReadonlyArray<NoInfer<K>>;
 	},
 ): Context<M, K, Pr, Po> {
 	const context: Record<string, unknown> = {};
