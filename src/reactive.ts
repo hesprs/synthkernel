@@ -6,6 +6,7 @@ export type Ref<T> = {
 	(newValue: T): void;
 	subscribe(func: RefMatchingFunc<T>, options?: { immediate?: boolean }): () => void;
 	unsubscribe(func: RefMatchingFunc<T>): void;
+	clear(): void;
 };
 type RefOptions<T> = { equals?: (newValue: T, oldValue: T) => boolean };
 
@@ -28,6 +29,7 @@ export function ref<T>(initial: T, options?: RefOptions<T>): Ref<T> {
 		if (ops?.immediate) callback(value, value);
 		return () => result.unsubscribe(callback);
 	};
+	result.clear = subs.clear;
 	result.unsubscribe = (callback) => subs.delete(callback);
 	return result;
 }
@@ -38,6 +40,7 @@ export type Hook<Args extends GeneralArray = []> = {
 	(...args: Args): void;
 	subscribe(callback: HookMatchingFunc<Args>): () => void;
 	unsubscribe(callback: HookMatchingFunc<Args>): void;
+	clear(): void;
 };
 
 export function hook<Args extends GeneralArray = []>(): Hook<Args> {
@@ -50,6 +53,7 @@ export function hook<Args extends GeneralArray = []>(): Hook<Args> {
 		return () => result.unsubscribe(callback);
 	};
 	result.unsubscribe = (callback) => subs.delete(callback);
+	result.clear = subs.clear;
 	return result;
 }
 
@@ -60,6 +64,7 @@ export type Computed<T> = {
 	subscribe(func: RefMatchingFunc<T>, options?: { immediate?: boolean }): () => void;
 	unsubscribe(func: RefMatchingFunc<T>): void;
 	dispose(): void;
+	clear(): void;
 };
 type ComputedOptions<T> = {
 	equals?: (newValue: T, oldValue: T) => boolean;
@@ -103,5 +108,6 @@ export function computed<T>(getter: () => T, options?: ComputedOptions<T>): Comp
 	result.dispose = () => {
 		while (cleanup.length) cleanup.pop()!();
 	};
+	result.clear = subs.clear;
 	return result;
 }
