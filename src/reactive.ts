@@ -29,7 +29,7 @@ export function ref<T>(initial: T, options?: RefOptions<T>): Ref<T> {
 		if (ops?.immediate) callback(value, value);
 		return () => result.unsubscribe(callback);
 	};
-	result.clear = subs.clear;
+	result.clear = subs.clear.bind(subs);
 	result.unsubscribe = (callback) => subs.delete(callback);
 	return result;
 }
@@ -53,7 +53,7 @@ export function hook<Args extends GeneralArray = []>(): Hook<Args> {
 		return () => result.unsubscribe(callback);
 	};
 	result.unsubscribe = (callback) => subs.delete(callback);
-	result.clear = subs.clear;
+	result.clear = subs.clear.bind(subs);
 	return result;
 }
 
@@ -108,6 +108,6 @@ export function computed<T>(getter: () => T, options?: ComputedOptions<T>): Comp
 	result.dispose = () => {
 		while (cleanup.length) cleanup.pop()!();
 	};
-	result.clear = subs.clear;
+	result.clear = subs.clear.bind(subs);
 	return result;
 }
