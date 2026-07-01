@@ -1,9 +1,8 @@
 type General = any;
-type GeneralObject = object;
 type GeneralConstructor = new (...args: Array<General>) => General;
 type ModuleConstructor<C extends object> = new (context: C) => General;
 
-type GeneralModuleInput = ReadonlyArray<GeneralConstructor> | ReadonlyArray<GeneralObject>;
+type GeneralModuleInput = ReadonlyArray<GeneralConstructor> | ReadonlyArray<object>;
 
 type IsPlainObject<T> = T extends object
 	? T extends Function | Date | RegExp | Array<any> | Map<any, any> | Set<any>
@@ -14,7 +13,7 @@ type IsPlainObject<T> = T extends object
 type ShallowMerge<A, B> =
 	IsPlainObject<A> extends true ? (IsPlainObject<B> extends true ? Omit<A, keyof B> & B : B) : B;
 
-type Keys<T> = T extends any ? keyof T : never;
+type Keys<T> = T extends General ? keyof T : never;
 
 type InstanceEach<T extends GeneralModuleInput> =
 	T extends ReadonlyArray<GeneralConstructor> ? { [K in keyof T]: InstanceType<T[K]> } : T;
@@ -63,13 +62,15 @@ type MergeResult<
 > = MergeObjects<[Pr, ...PickEach<InstanceEach<M>, K>, Po]>;
 
 export type Context<
-	M extends ReadonlyArray<ModuleConstructor<General>>,
+	M extends GeneralModuleInput,
 	K extends Keys<InstanceEach<M>[number]>,
 	Pr extends object = {},
 	Po extends object = {},
 > = MergeResult<M, K, Pr, Po> & {
-	__modules__: WeakMap<M[number], InstanceType<M[number]>>;
-	__getModule__: <C extends M[number]>(ctor: C) => InstanceType<C>;
+	__modules__: WeakMap<M[number], InstanceEach<M>[number]>;
+	__getModule__: <C extends new (ctx: General) => InstanceEach<M>[number]>(
+		ctor: C,
+	) => InstanceType<C>;
 	__addModule__: <N extends ModuleConstructor<Context<[...M, N], K, Pr, Po>>>(
 		newModule: N,
 	) => Context<[...M, N], K, Pr, Po>;
