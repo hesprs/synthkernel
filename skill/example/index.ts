@@ -1,4 +1,4 @@
-import type { MergeSingleKey, Context } from 'synthkernel';
+import type { MergeSingleKey, Context as ConstructContext } from 'synthkernel';
 import { createContext } from 'synthkernel';
 import type { Level, LogEntry } from './CoreLogging.ts';
 import AlertDispatch from './AlertDispatch.ts';
@@ -8,12 +8,15 @@ export type BaseOptions = {
 	appName: string;
 	debug?: boolean;
 };
+type Context = ConstructContext<AllModules, 'options' | 'root'>;
+
+export type AllOptions = Context['options'];
 
 const allModules = [CoreLogging, AlertDispatch] as const;
 type AllModules = typeof allModules;
 
 class PolisAlert {
-	private ctx?: Context<AllModules, 'options' | 'root'>;
+	private ctx?: Context;
 
 	dispatchAlert: (message: string) => Promise<boolean>;
 	log: (level: Level, message: string) => void;
