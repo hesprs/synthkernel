@@ -1,6 +1,7 @@
-// oxlint-disable unicorn/no-useless-spread : spread is needed to avoid mutating the set while iterating
+// oxlint-disable unicorn/no-useless-spread typescript/method-signature-style
 
-type RefMatchingFunc<T> = (newValue: T, oldValue: T) => void;
+// Return 'stop' to stop propagation
+type RefMatchingFunc<T> = (newValue: T, oldValue: T) => unknown;
 export type Ref<T> = {
 	(): T;
 	(newValue: T): void;
@@ -22,7 +23,7 @@ export function ref<T>(initial: T, options?: RefOptions<T>): Ref<T> {
 		if (equals(newValue, value)) return;
 		const oldValue = value;
 		value = newValue;
-		for (const callback of [...subs]) callback(newValue, oldValue);
+		for (const callback of [...subs]) if (callback(newValue, oldValue) === 'stop') break;
 	}) as Ref<T>;
 	result.subscribe = (callback, ops) => {
 		subs.add(callback);
@@ -34,7 +35,7 @@ export function ref<T>(initial: T, options?: RefOptions<T>): Ref<T> {
 	return result;
 }
 
-type HookMatchingFunc<Args extends GeneralArray> = (...args: Args) => void;
+type HookMatchingFunc<Args extends GeneralArray> = (...args: Args) => unknown;
 type GeneralArray = ReadonlyArray<unknown>;
 export type Hook<Args extends GeneralArray = []> = {
 	(...args: Args): void;
@@ -46,7 +47,7 @@ export type Hook<Args extends GeneralArray = []> = {
 export function hook<Args extends GeneralArray = []>(): Hook<Args> {
 	const subs = new Set<HookMatchingFunc<Args>>();
 	const result: Hook<Args> = (...args: Args) => {
-		for (const callback of [...subs]) callback(...args);
+		for (const callback of [...subs]) if (callback(...args) === 'stop') break;
 	};
 	result.subscribe = (callback) => {
 		subs.add(callback);
@@ -84,9 +85,7 @@ export function computed<T>(getter: () => T, options?: ComputedOptions<T>): Comp
 		const newValue = getter();
 		if (equals(newValue, oldValue)) return;
 		value = newValue;
-		// Spread is needed to avoid mutating the set while iterating
-		// oxlint-disable-next-line unicorn/no-useless-spread
-		for (const callback of [...subs]) callback(newValue, oldValue);
+		for (const callback of [...subs]) if (callback(newValue, oldValue) === 'stop') break;
 	};
 	const deps: Array<Trackable> = [];
 	if (_deps) {

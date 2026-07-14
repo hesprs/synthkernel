@@ -164,7 +164,7 @@ export default function createContext<
 	};
 
 	const registerModule = <C extends ModuleConstructor<General>>(Class: C) => {
-		const instance = new Class(context as Context<M, K, Pr, Po>);
+		const instance = new Class(context);
 		const record = instance as Record<string, unknown>;
 		modules.set(Class, instance);
 		instances.push(record);

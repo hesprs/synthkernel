@@ -1,213 +1,558 @@
 #!/usr/bin/env node
+
 // oxlint-disable import/no-nodejs-modules
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+
+import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import ts from 'typescript';
 
-const TYPE_FORMAT_FLAGS = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.InTypeAlias;
-const IDENTIFIER_RE = /^[$A-Z_a-z][$0-9A-Z_a-z]*$/;
+const DEFAULT_MAX_DEPTH = 25;
+const OUTPUT_ALIAS_BASE = '__SynthKernelResolvedType';
+const TYPE_NODE_FLAGS =
+	ts.NodeBuilderFlags.NoTruncation |
+	ts.NodeBuilderFlags.UseStructuralFallback |
+	ts.NodeBuilderFlags.UseSingleQuotesForStringLiteralType;
 
-function formatDiagnostic(error: ts.Diagnostic): string {
-	return ts.flattenDiagnosticMessageText(error.messageText, '\n');
+const HELPER_TYPES = new Set([
+	'Awaited',
+	'Capitalize',
+	'ConstructorParameters',
+	'Exclude',
+	'Extract',
+	'InstanceType',
+	'Lowercase',
+	'NoInfer',
+	'NonNullable',
+	'Omit',
+	'OmitThisParameter',
+	'Parameters',
+	'Partial',
+	'Pick',
+	'Readonly',
+	'ReadonlyArray',
+	'Record',
+	'Required',
+	'ReturnType',
+	'ThisParameterType',
+	'ThisType',
+	'Uncapitalize',
+	'Uppercase',
+]);
+
+type CliOptions = {
+	aliasName: string;
+	filePath: string;
+	maxDepth: number;
+};
+
+type ProjectConfig = {
+	fileNames: Array<string>;
+	options: ts.CompilerOptions;
+};
+
+type ProjectView = {
+	checker: ts.TypeChecker;
+	program: ts.Program;
+	sourceFile: ts.SourceFile;
+};
+
+type ExpansionResult = {
+	changed: boolean;
+	type: ts.TypeNode;
+	unfoldedRecursiveAliases: Set<string>;
+};
+
+function usage(): string {
+	return 'Usage: synthkernel <file-path> <type-alias> [--max-depth <non-negative integer>]';
 }
 
-function resolveFilePath(filePath: string): string {
-	const resolvedPath = path.resolve(process.cwd(), filePath);
-	if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isFile())
-		throw new Error(`File not found: ${filePath}`);
+function parseArguments(arguments_: Array<string>): CliOptions {
+	const positional: Array<string> = [];
+	let maxDepth = DEFAULT_MAX_DEPTH;
 
-	return resolvedPath;
-}
+	for (let index = 0; index < arguments_.length; index += 1) {
+		const argument = arguments_[index];
 
-function loadProgram(filePath: string): ts.Program {
-	const configPath = ts.findConfigFile(path.dirname(filePath), ts.sys.fileExists);
-	if (!configPath)
-		return ts.createProgram([filePath], {
-			module: ts.ModuleKind.ESNext,
-			moduleResolution: ts.ModuleResolutionKind.Bundler,
-			strict: true,
-			target: ts.ScriptTarget.ESNext,
-		});
-
-	const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-	if (configFile.error) throw new Error(formatDiagnostic(configFile.error));
-
-	const parsed = ts.parseJsonConfigFileContent(
-		configFile.config,
-		ts.sys,
-		path.dirname(configPath),
-	);
-	const rootNames = new Set(parsed.fileNames.map((name) => path.resolve(name)));
-	rootNames.add(filePath);
-	return ts.createProgram([...rootNames], parsed.options);
-}
-
-function findTypeAlias(sourceFile: ts.SourceFile, aliasName: string): ts.TypeAliasDeclaration {
-	const alias = sourceFile.statements.find(
-		(statement): statement is ts.TypeAliasDeclaration =>
-			ts.isTypeAliasDeclaration(statement) && statement.name.text === aliasName,
-	);
-	if (!alias) throw new Error(`Type alias not found: ${aliasName}`);
-	return alias;
-}
-
-function formatPropertyName(name: string): string {
-	return IDENTIFIER_RE.test(name) ? name : JSON.stringify(name);
-}
-
-function formatType(
-	type: ts.Type,
-	checker: ts.TypeChecker,
-	node: ts.Node,
-	seen = new Set<ts.Type>(),
-): string {
-	if (seen.has(type)) return checker.typeToString(type, node, TYPE_FORMAT_FLAGS);
-
-	if (type.flags & ts.TypeFlags.StringLiteral)
-		return JSON.stringify((type as ts.StringLiteralType).value);
-	if (type.flags & ts.TypeFlags.NumberLiteral)
-		return String((type as ts.NumberLiteralType).value);
-	if (type.flags & ts.TypeFlags.BigIntLiteral)
-		return checker.typeToString(type, node, TYPE_FORMAT_FLAGS);
-	if (type.flags & ts.TypeFlags.BooleanLiteral)
-		return checker.typeToString(type, node, TYPE_FORMAT_FLAGS);
-	if (type.flags & ts.TypeFlags.Undefined) return 'undefined';
-	if (type.flags & ts.TypeFlags.Null) return 'null';
-	if (type.flags & ts.TypeFlags.Never) return 'never';
-	if (type.flags & ts.TypeFlags.Unknown) return 'unknown';
-	if (type.flags & ts.TypeFlags.Any) return 'any';
-	if (type.flags & ts.TypeFlags.Void) return 'void';
-	if (type.flags & ts.TypeFlags.String) return 'string';
-	if (type.flags & ts.TypeFlags.Number) return 'number';
-	if (type.flags & ts.TypeFlags.Boolean) return 'boolean';
-	if (type.flags & ts.TypeFlags.BigInt) return 'bigint';
-	if (type.flags & ts.TypeFlags.ESSymbol) return 'symbol';
-
-	if (type.flags & ts.TypeFlags.Union) {
-		const members = (type as ts.UnionType).types;
-		const hasUndefined = members.some((member) => member.flags & ts.TypeFlags.Undefined);
-		const hasNull = members.some((member) => member.flags & ts.TypeFlags.Null);
-		const nonNullableMembers = members.filter(
-			(member) =>
-				!(member.flags & ts.TypeFlags.Undefined) && !(member.flags & ts.TypeFlags.Null),
-		);
-		const hasTrue = nonNullableMembers.some(
-			(member) =>
-				member.flags & ts.TypeFlags.BooleanLiteral &&
-				checker.typeToString(member, node, TYPE_FORMAT_FLAGS) === 'true',
-		);
-		const hasFalse = nonNullableMembers.some(
-			(member) =>
-				member.flags & ts.TypeFlags.BooleanLiteral &&
-				checker.typeToString(member, node, TYPE_FORMAT_FLAGS) === 'false',
-		);
-		if (
-			hasTrue &&
-			hasFalse &&
-			nonNullableMembers.every((member) => member.flags & ts.TypeFlags.BooleanLiteral)
-		) {
-			const head = 'boolean';
-			const tail = hasNull ? ['null'] : [];
-			if (hasUndefined) tail.push('undefined');
-			return [head, ...tail].join(' | ');
+		if (argument === '--max-depth') {
+			const value = arguments_[index + 1];
+			if (value === undefined) throw new Error(`Missing value for --max-depth.\n${usage()}`);
+			maxDepth = parseMaxDepth(value);
+			index += 1;
+			continue;
 		}
 
-		const parts = nonNullableMembers.map((subtype) => formatType(subtype, checker, node, seen));
-		if (hasNull) parts.push('null');
-		if (hasUndefined) parts.push('undefined');
-		return parts.join(' | ');
+		if (argument.startsWith('--max-depth=')) {
+			maxDepth = parseMaxDepth(argument.slice('--max-depth='.length));
+			continue;
+		}
+
+		if (argument.startsWith('-')) throw new Error(`Unknown option: ${argument}\n${usage()}`);
+		positional.push(argument);
 	}
 
-	if (checker.isTupleType(type)) {
-		const tuple = type as ts.TypeReference;
-		const elements = checker
-			.getTypeArguments(tuple)
-			.map((elementType) => formatType(elementType, checker, node, seen));
-		return `[${elements.join(', ')}]`;
-	}
+	if (positional.length !== 2) throw new Error(usage());
 
-	if (checker.isArrayType(type)) {
-		const arrayType = type as ts.TypeReference;
-		const [elementType] = checker.getTypeArguments(arrayType);
-		if (elementType) return `${formatType(elementType, checker, node, seen)}[]`;
-	}
-
-	if (type.flags & ts.TypeFlags.Intersection) {
-		const props = checker.getPropertiesOfType(type);
-		if (props.length > 0) return formatObjectType(type, checker, node, seen);
-		return (type as ts.IntersectionType).types
-			.map((subtype) => formatType(subtype, checker, node, seen))
-			.join(' & ');
-	}
-
-	const signatures = checker.getSignaturesOfType(type, ts.SignatureKind.Call);
-	const constructors = checker.getSignaturesOfType(type, ts.SignatureKind.Construct);
-	const props = checker.getPropertiesOfType(type);
-	if (props.length > 0 && signatures.length === 0 && constructors.length === 0)
-		return formatObjectType(type, checker, node, seen);
-
-	return checker.typeToString(type, node, TYPE_FORMAT_FLAGS);
+	return {
+		aliasName: positional[1],
+		filePath: resolve(positional[0]),
+		maxDepth,
+	};
 }
 
-function formatObjectType(
-	type: ts.Type,
+function parseMaxDepth(value: string): number {
+	if (!/^\d+$/.test(value)) throw new Error('--max-depth must be a non-negative integer.');
+	const depth = Number(value);
+	if (!Number.isSafeInteger(depth))
+		throw new Error('--max-depth must be a non-negative safe integer.');
+	return depth;
+}
+
+function loadProjectConfig(filePath: string): ProjectConfig {
+	const configPath = ts.findConfigFile(dirname(filePath), ts.sys.fileExists, 'tsconfig.json');
+	if (configPath === undefined) throw new Error(`No tsconfig.json found for ${filePath}.`);
+
+	const config = ts.readConfigFile(configPath, ts.sys.readFile);
+	if (config.error !== undefined) throwDiagnostics([config.error]);
+
+	const parsed = ts.parseJsonConfigFileContent(
+		config.config,
+		ts.sys,
+		dirname(configPath),
+		undefined,
+		configPath,
+	);
+	if (parsed.errors.length > 0) throwDiagnostics(parsed.errors);
+
+	const canonicalTarget = canonicalPath(filePath);
+	const fileNames = parsed.fileNames.some((name) => canonicalPath(name) === canonicalTarget)
+		? parsed.fileNames
+		: [...parsed.fileNames, filePath];
+
+	return { fileNames, options: parsed.options };
+}
+
+function createProjectView(
+	config: ProjectConfig,
+	filePath: string,
+	sourceText?: string,
+): ProjectView {
+	const host = ts.createCompilerHost(config.options, true);
+	const originalGetSourceFile = host.getSourceFile.bind(host);
+	const originalReadFile = host.readFile.bind(host);
+	const canonicalTarget = canonicalPath(filePath);
+
+	if (sourceText !== undefined) {
+		host.getSourceFile = (name, languageVersion, onError, shouldCreateNewSourceFile) => {
+			if (canonicalPath(name) === canonicalTarget)
+				return ts.createSourceFile(name, sourceText, languageVersion, true);
+
+			return originalGetSourceFile(name, languageVersion, onError, shouldCreateNewSourceFile);
+		};
+		host.readFile = (name) =>
+			canonicalPath(name) === canonicalTarget ? sourceText : originalReadFile(name);
+	}
+
+	const program = ts.createProgram(config.fileNames, config.options, host);
+	const sourceFile = program
+		.getSourceFiles()
+		.find((candidate) => canonicalPath(candidate.fileName) === canonicalTarget);
+	if (sourceFile === undefined) throw new Error(`Could not load source file: ${filePath}`);
+
+	return { checker: program.getTypeChecker(), program, sourceFile };
+}
+
+function canonicalPath(filePath: string): string {
+	const absolute = isAbsolute(filePath) ? filePath : resolve(filePath);
+	return ts.sys.useCaseSensitiveFileNames ? absolute : absolute.toLowerCase();
+}
+
+function validateProject(view: ProjectView): void {
+	const diagnostics = [
+		...view.program.getConfigFileParsingDiagnostics(),
+		...view.program.getOptionsDiagnostics(),
+		...view.program.getGlobalDiagnostics(),
+		...view.program.getSyntacticDiagnostics(view.sourceFile),
+		...view.program.getSemanticDiagnostics(view.sourceFile),
+	];
+	if (diagnostics.length > 0) throwDiagnostics(diagnostics);
+}
+
+function throwDiagnostics(diagnostics: ReadonlyArray<ts.Diagnostic>): never {
+	const message = ts.formatDiagnostics(diagnostics, {
+		getCanonicalFileName: canonicalPath,
+		getCurrentDirectory: ts.sys.getCurrentDirectory,
+		getNewLine: () => ts.sys.newLine,
+	});
+	throw new Error(message.trimEnd());
+}
+
+function resolveAlias(
 	checker: ts.TypeChecker,
-	node: ts.Node,
-	seen: Set<ts.Type>,
+	sourceFile: ts.SourceFile,
+	aliasName: string,
+): { declaration: ts.TypeAliasDeclaration; symbol: ts.Symbol } {
+	const localSymbol = checker.resolveName(aliasName, sourceFile, ts.SymbolFlags.Type, false);
+	if (localSymbol === undefined)
+		throw new Error(
+			`Type alias "${aliasName}" is not accessible at the top level of ${sourceFile.fileName}.`,
+		);
+
+	const symbol = resolveSymbol(checker, localSymbol);
+	const declaration = symbol.declarations?.find(ts.isTypeAliasDeclaration);
+	if (declaration === undefined)
+		throw new Error(
+			`"${aliasName}" is not a type alias accessible at the top level of ${sourceFile.fileName}.`,
+		);
+
+	return { declaration, symbol };
+}
+
+function resolveSymbol(checker: ts.TypeChecker, symbol: ts.Symbol): ts.Symbol {
+	return symbol.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(symbol) : symbol;
+}
+
+function findOutputAlias(sourceFile: ts.SourceFile, name: string): ts.TypeAliasDeclaration {
+	const declaration = sourceFile.statements.find(
+		(statement): statement is ts.TypeAliasDeclaration =>
+			ts.isTypeAliasDeclaration(statement) && statement.name.text === name,
+	);
+	if (declaration === undefined)
+		throw new Error('Internal error: generated output alias was not found.');
+	return declaration;
+}
+
+function createTargetTypeParameters(
+	checker: ts.TypeChecker,
+	declaration: ts.TypeAliasDeclaration,
+	sourceFile: ts.SourceFile,
+): ReadonlyArray<ts.TypeParameterDeclaration> | undefined {
+	const parameters = declaration.typeParameters?.map((parameter) => {
+		const type = checker.getTypeAtLocation(parameter);
+		return checker.typeParameterToDeclaration(type, sourceFile, TYPE_NODE_FLAGS) ?? parameter;
+	});
+	return parameters === undefined ? undefined : ts.factory.createNodeArray(parameters);
+}
+
+function configuredTypeRoots(config: ProjectConfig, containingFile: string): Array<string> {
+	return (config.options.types ?? []).flatMap((name) => {
+		const result = ts.resolveTypeReferenceDirective(
+			name,
+			containingFile,
+			config.options,
+			ts.sys,
+		).resolvedTypeReferenceDirective;
+		return result?.resolvedFileName === undefined ? [] : [dirname(result.resolvedFileName)];
+	});
+}
+
+function isInside(filePath: string, directory: string): boolean {
+	const path = relative(resolve(directory), resolve(filePath));
+	return path === '' || (!path.startsWith('..') && !isAbsolute(path));
+}
+
+function isConfiguredAmbientSymbol(
+	program: ts.Program,
+	typeRoots: ReadonlyArray<string>,
+	symbol: ts.Symbol,
+): boolean {
+	return (
+		symbol.declarations?.some((declaration) => {
+			const sourceFile = declaration.getSourceFile();
+			return (
+				program.isSourceFileDefaultLibrary(sourceFile) ||
+				typeRoots.some((root) => isInside(sourceFile.fileName, root))
+			);
+		}) ?? false
+	);
+}
+
+function typeReferenceSymbol(
+	checker: ts.TypeChecker,
+	node: ts.TypeReferenceNode,
+): ts.Symbol | undefined {
+	const type = checker.getTypeAtLocation(node);
+	const symbol =
+		checker.getSymbolAtLocation(node.typeName) ?? type.aliasSymbol ?? type.getSymbol();
+	return symbol === undefined ? undefined : resolveSymbol(checker, symbol);
+}
+
+function typeAliasDeclaration(symbol: ts.Symbol): ts.TypeAliasDeclaration | undefined {
+	return symbol.declarations?.find(ts.isTypeAliasDeclaration);
+}
+
+function aliasIdentity(declaration: ts.TypeAliasDeclaration): string {
+	return `${canonicalPath(declaration.getSourceFile().fileName)}:${declaration.pos}:${declaration.end}`;
+}
+
+function aliasDependencies(
+	checker: ts.TypeChecker,
+	declaration: ts.TypeAliasDeclaration,
+): Set<ts.Symbol> {
+	const dependencies = new Set<ts.Symbol>();
+
+	function visit(node: ts.Node): void {
+		if (ts.isTypeReferenceNode(node)) {
+			const symbol = typeReferenceSymbol(checker, node);
+			if (symbol !== undefined && typeAliasDeclaration(symbol) !== undefined)
+				dependencies.add(symbol);
+		}
+		ts.forEachChild(node, visit);
+	}
+
+	visit(declaration.type);
+	return dependencies;
+}
+
+function createAliasClassifiers(checker: ts.TypeChecker): {
+	isDirectAlias: (symbol: ts.Symbol) => boolean;
+	isRecursiveAlias: (symbol: ts.Symbol) => boolean;
+} {
+	const directCache = new Map<ts.Symbol, boolean>();
+	const recursiveCache = new Map<ts.Symbol, boolean>();
+
+	function containsInstantiation(node: ts.Node, visiting: Set<ts.Symbol>): boolean {
+		if (ts.isArrayTypeNode(node)) return true;
+
+		if (ts.isTypeReferenceNode(node)) {
+			const symbol = typeReferenceSymbol(checker, node);
+			if (symbol !== undefined) {
+				const declaration = typeAliasDeclaration(symbol);
+				const genericDeclaration = symbol.declarations?.find(
+					(
+						candidate,
+					): candidate is ts.Declaration & {
+						typeParameters: ts.NodeArray<ts.TypeParameterDeclaration>;
+					} => 'typeParameters' in candidate && candidate.typeParameters !== undefined,
+				);
+
+				if (node.typeArguments !== undefined || genericDeclaration !== undefined)
+					return true;
+				if (declaration !== undefined && !visiting.has(symbol)) {
+					const nextVisiting = new Set(visiting).add(symbol);
+					if (containsInstantiation(declaration.type, nextVisiting)) return true;
+				}
+			}
+		}
+
+		return ts.forEachChild(node, (child) => containsInstantiation(child, visiting)) ?? false;
+	}
+
+	function isDirectAlias(symbol: ts.Symbol): boolean {
+		const cached = directCache.get(symbol);
+		if (cached !== undefined) return cached;
+
+		const declaration = typeAliasDeclaration(symbol);
+		if (declaration === undefined || declaration.typeParameters !== undefined) return false;
+
+		const direct = !containsInstantiation(declaration.type, new Set([symbol]));
+		directCache.set(symbol, direct);
+		return direct;
+	}
+
+	function reachesAlias(
+		current: ts.Symbol,
+		target: ts.Symbol,
+		visiting: Set<ts.Symbol>,
+	): boolean {
+		if (visiting.has(current)) return false;
+		const declaration = typeAliasDeclaration(current);
+		if (declaration === undefined) return false;
+
+		const nextVisiting = new Set(visiting).add(current);
+		for (const dependency of aliasDependencies(checker, declaration))
+			if (dependency === target || reachesAlias(dependency, target, nextVisiting))
+				return true;
+
+		return false;
+	}
+
+	function isRecursiveAlias(symbol: ts.Symbol): boolean {
+		const cached = recursiveCache.get(symbol);
+		if (cached !== undefined) return cached;
+		const recursive = reachesAlias(symbol, symbol, new Set());
+		recursiveCache.set(symbol, recursive);
+		return recursive;
+	}
+
+	return { isDirectAlias, isRecursiveAlias };
+}
+
+function expandAliasOnce(
+	view: ProjectView,
+	declaration: ts.TypeAliasDeclaration,
+	targetSymbol: ts.Symbol,
+	typeRoots: ReadonlyArray<string>,
+	previouslyUnfoldedRecursiveAliases: ReadonlySet<string>,
+): ExpansionResult {
+	const { checker, program } = view;
+	const { isDirectAlias, isRecursiveAlias } = createAliasClassifiers(checker);
+	let changed = false;
+	const unfoldedRecursiveAliases = new Set<string>();
+
+	const transformation = ts.transform(declaration.type, [
+		(context) => {
+			const visitor: ts.Visitor = (node) => {
+				if (ts.isIndexedAccessTypeNode(node)) {
+					const type = checker.getTypeAtLocation(node);
+					const expanded = checker.typeToTypeNode(
+						type,
+						declaration,
+						TYPE_NODE_FLAGS | ts.NodeBuilderFlags.InTypeAlias,
+					);
+					if (expanded !== undefined) {
+						changed = true;
+						return expanded;
+					}
+				}
+
+				if (!ts.isTypeReferenceNode(node)) return ts.visitEachChild(node, visitor, context);
+
+				const symbol = typeReferenceSymbol(checker, node);
+				if (symbol === undefined) return ts.visitEachChild(node, visitor, context);
+
+				const ambient = isConfiguredAmbientSymbol(program, typeRoots, symbol);
+				const helper = ambient && HELPER_TYPES.has(symbol.getName());
+				if (
+					helper &&
+					symbol.getName() === 'ReadonlyArray' &&
+					node.typeArguments?.length === 1
+				) {
+					changed = true;
+					const argument =
+						ts.visitNode(node.typeArguments[0], visitor, ts.isTypeNode) ??
+						node.typeArguments[0];
+					return ts.factory.createTypeOperatorNode(
+						ts.SyntaxKind.ReadonlyKeyword,
+						ts.factory.createArrayTypeNode(argument),
+					);
+				}
+
+				const alias = typeAliasDeclaration(symbol);
+				const recursive = alias !== undefined && isRecursiveAlias(symbol);
+				const recursiveIdentity = recursive ? aliasIdentity(alias) : undefined;
+				const preserve =
+					symbol === targetSymbol ||
+					(recursiveIdentity !== undefined &&
+						previouslyUnfoldedRecursiveAliases.has(recursiveIdentity)) ||
+					(ambient && !helper) ||
+					(alias !== undefined && !recursive && isDirectAlias(symbol));
+				if (preserve || (alias === undefined && !helper))
+					return ts.visitEachChild(node, visitor, context);
+
+				const type = checker.getTypeAtLocation(node);
+				const expanded = checker.typeToTypeNode(
+					type,
+					declaration,
+					TYPE_NODE_FLAGS | ts.NodeBuilderFlags.InTypeAlias,
+				);
+				if (expanded === undefined) return ts.visitEachChild(node, visitor, context);
+
+				changed = true;
+				if (recursiveIdentity !== undefined)
+					unfoldedRecursiveAliases.add(recursiveIdentity);
+				return expanded;
+			};
+
+			return (root) => ts.visitNode(root, visitor, ts.isTypeNode) ?? root;
+		},
+	]);
+
+	const type = transformation.transformed[0];
+	transformation.dispose();
+	return { changed, type, unfoldedRecursiveAliases };
+}
+
+function printAlias(
+	name: string,
+	typeParameters: ReadonlyArray<ts.TypeParameterDeclaration> | undefined,
+	type: ts.TypeNode,
+	sourceFile: ts.SourceFile,
 ): string {
-	seen.add(type);
-	try {
-		const lines = checker.getPropertiesOfType(type).map((symbol) => {
-			const optional = (symbol.flags & ts.SymbolFlags.Optional) !== 0;
-			const propType = checker.getTypeOfSymbolAtLocation(symbol, node);
-			return `    ${formatPropertyName(symbol.getName())}${optional ? '?' : ''}: ${formatType(propType, checker, node, seen)};`;
-		});
-		if (lines.length === 0) return '{}';
-		return `{
-${lines.join('\n')}
-}`;
-	} finally {
-		seen.delete(type);
-	}
+	const declaration = ts.factory.createTypeAliasDeclaration(
+		undefined,
+		name,
+		typeParameters,
+		type,
+	);
+	return ts
+		.createPrinter({ newLine: ts.NewLineKind.LineFeed })
+		.printNode(ts.EmitHint.Unspecified, declaration, sourceFile);
 }
 
-export function inspectTypeAlias(filePath: string, aliasName: string): string {
-	const resolvedFilePath = resolveFilePath(filePath);
-	const program = loadProgram(resolvedFilePath);
-	const sourceFile = program.getSourceFile(resolvedFilePath);
-	if (!sourceFile) throw new Error(`Source file not found in program: ${filePath}`);
-
-	const alias = findTypeAlias(sourceFile, aliasName);
-	if (alias.typeParameters?.length) throw new Error(`Type alias is generic: ${aliasName}`);
-
-	const checker = program.getTypeChecker();
-	const type = checker.getTypeFromTypeNode(alias.type);
-	return formatType(type, checker, alias);
+function uniqueOutputAlias(checker: ts.TypeChecker, sourceFile: ts.SourceFile): string {
+	let name = OUTPUT_ALIAS_BASE;
+	let suffix = 2;
+	while (checker.resolveName(name, sourceFile, ts.SymbolFlags.Type, false) !== undefined) {
+		name = `${OUTPUT_ALIAS_BASE}${suffix}`;
+		suffix += 1;
+	}
+	return name;
 }
 
-export function main(argv: Array<string> = process.argv.slice(2)): number {
-	if (argv.length !== 2) {
-		console.error('Usage: synthkernel <file-path> <type-alias>');
-		return 1;
+function inspectType(options: CliOptions): string {
+	const sourceText = ts.sys.readFile(options.filePath);
+	if (sourceText === undefined)
+		throw new Error(`Could not read source file: ${options.filePath}`);
+
+	const config = loadProjectConfig(options.filePath);
+	const initialView = createProjectView(config, options.filePath);
+	validateProject(initialView);
+
+	const target = resolveAlias(initialView.checker, initialView.sourceFile, options.aliasName);
+	const initialType =
+		canonicalPath(target.declaration.getSourceFile().fileName) ===
+		canonicalPath(options.filePath)
+			? target.declaration.type
+			: initialView.checker.typeToTypeNode(
+					initialView.checker.getDeclaredTypeOfSymbol(target.symbol),
+					initialView.sourceFile,
+					TYPE_NODE_FLAGS | ts.NodeBuilderFlags.InTypeAlias,
+				);
+	if (initialType === undefined)
+		throw new Error(`Could not resolve type alias "${options.aliasName}".`);
+
+	const outputAlias = uniqueOutputAlias(initialView.checker, initialView.sourceFile);
+	let output = printAlias(
+		outputAlias,
+		createTargetTypeParameters(initialView.checker, target.declaration, initialView.sourceFile),
+		initialType,
+		initialView.sourceFile,
+	);
+	const typeRoots = configuredTypeRoots(config, options.filePath);
+	const unfoldedRecursiveAliases = new Set<string>();
+
+	for (let depth = 0; depth < options.maxDepth; depth += 1) {
+		const overlayText = `${sourceText}\n${output}\n`;
+		const view = createProjectView(config, options.filePath, overlayText);
+		const declaration = findOutputAlias(view.sourceFile, outputAlias);
+		const targetSymbol = resolveAlias(view.checker, view.sourceFile, options.aliasName).symbol;
+		const result = expandAliasOnce(
+			view,
+			declaration,
+			targetSymbol,
+			typeRoots,
+			unfoldedRecursiveAliases,
+		);
+		output = printAlias(outputAlias, declaration.typeParameters, result.type, view.sourceFile);
+		for (const identity of result.unfoldedRecursiveAliases)
+			unfoldedRecursiveAliases.add(identity);
+		if (!result.changed) break;
 	}
 
-	try {
-		console.log(inspectTypeAlias(argv[0], argv[1]));
-		return 0;
-	} catch (error) {
-		console.error(error instanceof Error ? error.message : String(error));
-		return 1;
-	}
+	const finalView = createProjectView(config, options.filePath, `${sourceText}\n${output}\n`);
+	const finalDeclaration = findOutputAlias(finalView.sourceFile, outputAlias);
+	return printAlias(
+		options.aliasName,
+		finalDeclaration.typeParameters,
+		finalDeclaration.type,
+		finalView.sourceFile,
+	);
 }
 
-function isMainEntryPoint() {
-	if (!process.argv[1]) return false;
-	try {
-		return fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
-	} catch {
-		return path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-	}
+try {
+	const options = parseArguments(process.argv.slice(2));
+	process.stdout.write(`${inspectType(options)}\n`);
+} catch (error) {
+	const message = error instanceof Error ? error.message : String(error);
+	process.stderr.write(`${message}\n`);
+	process.exitCode = 1;
 }
-
-if (isMainEntryPoint()) process.exitCode = main();
