@@ -171,9 +171,10 @@ test('resolves indexed access aliases without expanding the source context', asy
 		stdout:
 			'type AllOptions = {\n' +
 			'    logLevel: Level;\n' +
-			'    maxLogs: number | undefined;\n' +
+			'    maxLogs?: number | undefined;\n' +
 			'    appName: string;\n' +
 			'    debug?: boolean | undefined;\n' +
+			'} & {\n' +
 			'    minMessageLength: number;\n' +
 			'    maxMessageLength: number;\n' +
 			'};\n',
