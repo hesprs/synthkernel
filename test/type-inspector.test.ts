@@ -25,7 +25,7 @@ async function inspect(
 ): Promise<InspectorResult> {
 	try {
 		const { stderr, stdout } = await executeFile(
-			'bun',
+			process.execPath,
 			[inspectorPath, filePath, aliasName, ...arguments_],
 			{ cwd: projectRoot, encoding: 'utf8' },
 		);
