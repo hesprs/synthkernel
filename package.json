@@ -39,7 +39,8 @@
 	"scripts": {
 		"compile": "tsdown && bun scripts/ipynb-to-md.ts",
 		"fix": "oxlint --fix --silent && oxfmt",
-		"check": "oxlint && oxfmt --check"
+		"check": "oxlint && oxfmt --check",
+		"tests": "bun test --timeout 30000"
 	},
 	"dependencies": {
 		"typescript": "6.0.3"
