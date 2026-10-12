@@ -7,10 +7,7 @@ export default defineConfig({
 		index: 'src/index.ts',
 	},
 	minify: true,
-	outExtensions: () => ({
-		dts: '.d.ts',
-		js: '.js',
-	}),
+	outExtensions: () => ({ dts: '.d.ts', js: '.js' }),
 	sourcemap: true,
 	unbundle: true,
 });

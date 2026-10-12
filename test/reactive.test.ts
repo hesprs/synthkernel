@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { expect, test } from 'bun:test';
 import { computed, hook, ref } from '../src/reactive';
 
 test('ref reads initial value and updates subscribers', () => {

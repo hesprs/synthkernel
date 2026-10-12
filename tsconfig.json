@@ -20,6 +20,7 @@
 		"verbatimModuleSyntax": true,
 		"allowImportingTsExtensions": true,
 		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["bun"],
 		"outDir": "dist"
 	},
 	"include": ["**/*.ts"]

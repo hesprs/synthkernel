@@ -4,7 +4,6 @@ in
 pkgs.mkShell {
   buildInputs = with pkgs; [
     nodejs-slim_latest
-    pnpm
     python3
     python314Packages.jupyterlab
   ];

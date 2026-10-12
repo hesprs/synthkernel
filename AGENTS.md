@@ -9,8 +9,8 @@ SynthKernel is an experimental TypeScript software architecture.
 
 ## Commands
 
-- `pnpm lint`: format and fix fixable lint errors (always run before `pnpm check`)
-- `pnpm check`: check types, lint and format (no fix)
-- `pnpm build`: build package
-- `pnpm test`: run tests
+- `bun fix`: format and fix fixable lint errors (always run before `pnpm check`)
+- `bun check`: check types, lint and format (no fix)
+- `bun compile`: build package
+- `bun test`: run tests
 - `bun ./skill/example/main.ts`: run example

@@ -1,51 +1,109 @@
 ---
 name: synthkernel
-description: Follow the standards of SynthKernel architecture. Must use this skill when operating on any project that claims to adopt SynthKernel.
-license: MIT
-compatibility: TypeScript
+description: Architecture skill for SynthKernel — TypeScript module composition via createContext. Use when building, extending, or refactoring a SynthKernel project.
 ---
 
-## About SynthKernel
+## SynthKernel
 
-SynthKernel is a TypeScript software architecture that helps you write efficient, clean and modular code.
+SynthKernel is a minimalist TypeScript module composition architecture. It ships only `createContext`, type utilities, and reactive primitives — nothing else.
 
-Typical practice of SynthKernel consists a module loader class and module classes:
+`createContext` takes an ordered array of module classes, instantiates each with a shared context object, merges their contributed keys, and injects the result back. Modules are plain classes — no base class, no DI container, no decorators. The context is an API pool shared between modules and a facade for consumer code. Everything is a module: event systems, registries, logging, persistence, extensibility — all composed through the same primitive.
 
-- The module loader class manages module lifecycles, orchestrates types, and behaves as an facade at the surface of your app logic.
-- All module classes extend a `BaseModule` class, they define APIs, execute actual logic, augment the loader class and wire each other via dependency injection.
-- Types are resolved via generics orchestration.
-- Modules are composed to the loader to form an APP. A module loader can also be a module of a parent loader.
-- It is applicable to almost all use cases, including but not limited to backend service, complex automation, CLI application, and canvas rendering engine.
+## Design Principles
 
-## File System Conventions
-
-SynthKernel should be structured in a tree pattern.
-
-A loader together with the base module and all its direct modules should be placed flatly in one folder:
-
-- the file accommodating the loader should be named `index.ts`
-- base module named `BaseModule.ts`
-- types named `types.ts`
-- all modules are named `(module name in PascalCase).ts`
-- no restriction to the name of other files
-
-It's a standard practice to turn a over-bloated module into a new loader-module structure, then simply turn the module into a folder with the same requirements above.
+- **Context is an API pool**: stable APIs and shared configuration, not volatile runtime data. Use factories exposed via `root` for transient state.
+- **Everything is a module**: SynthKernel ships only the composition primitive. Event buses, registries, schedulers, config validation, plugin systems — all built as modules. Build what you need as a module and expose it via `root`.
+- **Static modules**: keep core modules in a fixed array. Reserve `__addModule__` for user-installed plugins.
+- **Unidirectional flow**: `preMerge` flows down, `root` flows up. Modules access siblings through injected context, not imports.
+- **Later modules can intercept earlier ones**: a module can wrap or override sibling APIs in its constructor. Use for middleware patterns (logging, caching, auth).
 
 ## When to Use
 
-- At the early stage of development, when you have clues of logic yet haven't written any code.
-- You don't have a clear architecture convention.
-- During refactors when you aim to split some large modules or make the project modular.
-- You are adding new functionalities and considering to make a new module, wanting to understand SynthKernel.
+- Modular composition with type-safe shared state.
+- Plugin-extensible applications.
+- Refactoring a monolith into composable modules.
 
 ## When Not to Use
 
-- You are not supposed to create or change the architecture.
-- You are developing web UI which has its own conventions.
-- You are serving for a simple project (loc < 200) where a classical monolith is more convenient.
+- Simple project (loc < 200) where a monolith is clearer.
+- Projects requiring decorator-based DI or topological dependency resolution.
 
-## Actions
+## createContext
 
-- If you are implementing SynthKernel from scratch or refactoring existing code to adopt SynthKernel, go to [start](start.md).
-- If you are adding a new module or splitting modules, go to [maintenance](maintenance.md).
-- You can find an example of standard practice in [./example](example/README.md).
+`createContext(classes, options)` → context object
+
+- `mergeKeys` — instance keys merged into context. `root` flattens its contents into context root instead of nesting under `context.root`.
+- `injectKeys` — keys written back to every instance after merge. Defaults to `mergeKeys`.
+- `preMerge` — values merged before module construction (base infrastructure passed to all modules).
+- `postMerge` — values merged after all modules, before injection.
+
+Merge order: `preMerge` → modules (sequential) → `postMerge` → inject.
+
+Context helpers (non-enumerable): `__getModule__(ctor)`, `__addModule__(ctor)`, `__assign__(obj)`.
+
+## Module Pattern
+
+A module is a plain class that takes context in its constructor:
+
+```typescript
+export default class MyModule {
+  declare options: { myOption: string }; // type-only: context injects runtime value
+  constructor(private readonly ctx: { neededApi: () => void }) {} // structural: only keys used
+  root = { myMethod: this.myMethod }; // flattens into context root
+}
+```
+
+- **`declare`** — type-only contributions to orchestrated types. No runtime value; context injects via `injectKeys`.
+- **Constructor context** — structurally typed: only declare keys this module uses, not the full context type. Decouples modules from each other and enables plain-object mocking in tests.
+- **`root`** — public API object. Flattens into context root so consumer code and sibling modules access methods directly.
+
+## Facade Pattern
+
+The facade owns the module list, creates context, exposes root APIs, and can manage module lifecycles through `__getModule__`:
+
+```typescript
+import type { MergeSingleKey, Context as ConstructContext } from 'synthkernel';
+import { createContext } from 'synthkernel';
+import ModuleA from './ModuleA.ts';
+import ModuleB from './ModuleB.ts';
+
+const allModules = [ModuleA, ModuleB] as const;
+type AllModules = typeof allModules;
+type Context = ConstructContext<AllModules, 'options' | 'root'>;
+export type AllOptions = MergeSingleKey<AllModules, 'options'>;
+
+class App {
+  private ctx?: Context;
+  someApi: Context['someApi'];
+
+  constructor(public options: AllOptions) {
+    this.ctx = createContext(allModules, {
+      mergeKeys: ['options', 'root'],
+    }).__assign__({ options });
+    for (const ctor of allModules) this.ctx.__getModule__(ctor).start();
+    this.someApi = this.ctx.someApi;
+  }
+
+  dispose = () => {
+    for (const ctor of allModules.toReversed()) this.ctx?.__getModule__(ctor).dispose();
+    this.ctx = undefined;
+  };
+}
+
+export default App;
+```
+
+`MergeSingleKey<AllModules, 'options'>` derives the combined options type from every module's `declare options`. `ConstructContext<AllModules, 'options' | 'root'>` is the fully merged context type. Re-export both so consumer code and external packages use the orchestrated types.
+
+## File Layout
+
+A context and its direct modules live in one folder: `index.ts` creates the context, each module is `(PascalCase).ts`. No required base module, types, or utilities file. Split an oversized module into a sub-folder with its own `createContext` call.
+
+## Reactive Primitives
+
+SynthKernel also exports lightweight reactive primitives `ref`, `computed`, and `hook` for modules needing observable state or events. These are standalone utilities, not part of the composition architecture.
+
+## Reference
+
+- Advanced patterns (testing, nested contexts, interception, settings): [patterns](patterns.md)
+- Working example: [./example](example/main.ts) (minimal, real applications can be much larger)
