@@ -55,8 +55,7 @@
 					"camelCase": false,
 					"snakeCase": false,
 					"pascalCase": true
-				},
-				"ignore": ["zh-Hans.ts"]
+				}
 			}
 		],
 		"unicorn/consistent-function-scoping": "off",
