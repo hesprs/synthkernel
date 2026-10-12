@@ -28,7 +28,7 @@ class PolisAlert {
 		}).__assign__({ options });
 		for (const ctor of allModules) this.ctx.__getModule__(ctor).onStart();
 
-		// Augmentation
+		// Root API exposure
 		this.dispatchAlert = this.ctx.dispatchAlert;
 		this.log = this.ctx.log;
 		this.logs = this.ctx.logs;

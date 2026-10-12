@@ -1,7 +1,7 @@
 // oxlint-disable vitest/require-hook
 /**
  * PolisAlert Consumer Example
- * Demonstrates type-safe augmentation and module composition
+ * Demonstrates type-safe module composition and root API exposure
  */
 
 import PolisAlert from './index.ts';
@@ -15,7 +15,7 @@ const app = new PolisAlert({
 	minMessageLength: 1,
 });
 
-// Type-safe access to augmented methods
+// Type-safe access to root APIs
 app.log('INFO', 'Application started');
 
 const success = await app.dispatchAlert('Hello Polis');

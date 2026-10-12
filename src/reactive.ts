@@ -1,6 +1,6 @@
 // oxlint-disable unicorn/no-useless-spread typescript/method-signature-style
 
-// Return 'stop' to stop propagation
+// Return truthy to stop propagation
 type RefMatchingFunc<T> = (newValue: T, oldValue: T) => unknown;
 export type Ref<T> = {
 	(): T;
@@ -23,7 +23,7 @@ export function ref<T>(initial: T, options?: RefOptions<T>): Ref<T> {
 		if (equals(newValue, value)) return;
 		const oldValue = value;
 		value = newValue;
-		for (const callback of [...subs]) if (callback(newValue, oldValue) === 'stop') break;
+		for (const callback of [...subs]) if (callback(newValue, oldValue)) break;
 	}) as Ref<T>;
 	result.subscribe = (callback, ops) => {
 		subs.add(callback);
@@ -47,7 +47,7 @@ export type Hook<Args extends GeneralArray = []> = {
 export function hook<Args extends GeneralArray = []>(): Hook<Args> {
 	const subs = new Set<HookMatchingFunc<Args>>();
 	const result: Hook<Args> = (...args: Args) => {
-		for (const callback of [...subs]) if (callback(...args) === 'stop') break;
+		for (const callback of [...subs]) if (callback(...args)) break;
 	};
 	result.subscribe = (callback) => {
 		subs.add(callback);
@@ -85,7 +85,7 @@ export function computed<T>(getter: () => T, options?: ComputedOptions<T>): Comp
 		const newValue = getter();
 		if (equals(newValue, oldValue)) return;
 		value = newValue;
-		for (const callback of [...subs]) if (callback(newValue, oldValue) === 'stop') break;
+		for (const callback of [...subs]) if (callback(newValue, oldValue)) break;
 	};
 	const deps: Array<Trackable> = [];
 	if (_deps) {

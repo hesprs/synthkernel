@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="assets/logo.svg" alt="JSON Canvas Viewer logo" width="280px">
+    <img src="assets/logo.svg" alt="SynthKernel logo" width="280px">
     <br />
     SynthKernel
     <br />
@@ -27,41 +27,33 @@
     </a>
 </p>
 
-## ❓ What is SynthKernel?
+## What is SynthKernel?
 
 SynthKernel is a low-level TypeScript architecture for building structured [modular monoliths](https://www.geeksforgeeks.org/system-design/what-is-a-modular-monolith/?spm=a2ty_o01.29997173.0.0.4f2555fbU2saKo)
-. It combines OOP, advanced generics, and the Facade Pattern to push Inversion of Control to its extremum.
+. It combines OOP, advanced generics, and the Facade Pattern to push Inversion of Control through structural typing.
 
-Unlike conventional loaders that expose APIs, SynthKernel’s loader strictly manages lifecycles and acts as a facade. **Modules are the true center**: they define APIs, execute logic, augment the loader, and wire dependencies. This results in an application structure clearly representable as a tree diagram. The philosophy is universally applicable across software, OS design, and robotics.
+SynthKernel composes plain classes into a shared, type-safe context. The class that creates a context becomes a facade, exposing the composed APIs. Modules define APIs, execute logic, contribute to the context through their constructor and `root`, and read what they need from siblings. This results in an application structure clearly representable as a tree diagram. The philosophy is universally applicable across software, OS design, and robotics.
 
-## 🔑 Core Problem It Solves
+## Core Capability
 
 SynthKernel eliminates the architectural friction of "God Objects" and manual registries by enforcing a type-safe, modular composition model. It leverages TypeScript’s type system to automatically orchestrate capabilities, ensuring that adding a feature instantly augments both runtime behavior and static types. This guarantees strict modularity, zero configuration drift, and inherent testability without sacrificing scalability.
 
-## 📰 Whitepaper
+## Whitepaper
 
-SynthKernel provides a Jupyter Notebook whitepaper running TypeScript, you can find it here: [SynthKernel Whitepaper](https://github.com/hesprs/synthkernel/blob/main/whitepaper.ipynb).
+The whitepaper is available as both a [Jupyter Notebook](https://github.com/hesprs/synthkernel/blob/main/whitepaper.ipynb) and a plain [Markdown file](https://github.com/hesprs/synthkernel/blob/main/whitepaper.md).
 
-Prerequisites to correctly execute the whitepaper:
-
-- Jupyter Lab
-- Python 3
-- Node.js & pnpm
-
-After cloning the repository, run the following commands to set up the environment:
+To read the notebook interactively, you need Jupyter Lab with a TypeScript kernel. After cloning the repository:
 
 ```sh
-pnpm install
-pnpm tslab install # register TS kernel
+bun install
+tslab install --user # register TS kernel
 ```
 
-Then open `whitepaper.ipynb` in your viewer (Jupyter WebUI or VSCode), choose the TS kernel. Now you can read the notebook.
+Then open `whitepaper.ipynb` in your viewer (Jupyter WebUI or VSCode), choose the TS kernel.
 
-## 🤖 Agent Skill
+## Agent Skill
 
-SynthKernel is 100% AI-native, a skill is written to make agents more comfortable when navigating inside a SynthKernel repo.
-
-WARNING: SynthKernel does enforce very strict and opinionated naming, architecture and file system conventions, and is still in experimental phase.
+SynthKernel is AI-native, a skill is written to make agents more comfortable when navigating inside a SynthKernel repo.
 
 **To install the skill**:
 
@@ -77,6 +69,5 @@ The command will scaffold and find 1 skill. Then select the coding agent, whethe
 
 Copyright ©️ 2026 Hesprs (Hēsperus)
 
-Architecture whitepaper and README licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
-
+Architecture whitepaper and README licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)<br>
 Agent skill and `synthkernel` npm package licensed under the [MIT License](https://mit-license.org/)

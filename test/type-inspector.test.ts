@@ -1,12 +1,12 @@
 // oxlint-disable import/no-nodejs-modules
 
+import { expect, test } from 'bun:test';
 import { execFile } from 'node:child_process';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
-import { expect, test } from 'vitest';
 
 const executeFile = promisify(execFile);
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');

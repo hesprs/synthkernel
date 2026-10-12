@@ -87,7 +87,9 @@
 		"eslint/no-underscore-dangle": "off",
 		"typescript/no-this-alias": "off",
 		"vitest/require-top-level-describe": "off",
-		"typescript/no-unnecessary-type-parameters": "off"
+		"typescript/no-unnecessary-type-parameters": "off",
+		"eslint/one-var": "off",
+		"vitest/prefer-importing-vitest-globals": "off"
 	},
 	"env": {
 		"builtin": true,
@@ -95,10 +97,11 @@
 		"node": true
 	},
 	"globals": {
-		"activeDocument": "readonly"
+		"Bun": "readonly"
 	},
 	"ignorePatterns": ["**/node_modules/**", "**/dist/**"],
 	"options": {
-		"typeAware": true
+		"typeAware": true,
+		"typeCheck": true
 	}
 }

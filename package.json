@@ -37,28 +37,20 @@
 		"provenance": true
 	},
 	"scripts": {
-		"build": "tsdown && oxfmt package.json",
-		"test": "vitest run",
-		"lint": "oxlint --fix --silent && oxfmt",
-		"check": "oxlint --type-check --format agent && oxfmt --check"
+		"compile": "tsdown && bun scripts/ipynb-to-md.ts",
+		"fix": "oxlint --fix --silent && oxfmt",
+		"check": "oxlint && oxfmt --check"
 	},
 	"dependencies": {
 		"typescript": "6.0.3"
 	},
 	"devDependencies": {
-		"@types/node": "^26.1.1",
-		"oxfmt": "^0.58.0",
-		"oxlint": "^1.73.0",
-		"oxlint-tsgolint": "^0.24.0",
-		"tsdown": "^0.22.6",
-		"tslab": "^1.0.22",
-		"vitest": "^4.1.10"
+		"@types/bun": "^1.4.2",
+		"oxfmt": "^0.72.0",
+		"oxlint": "^1.87.0",
+		"oxlint-tsgolint": "^7.0.2004",
+		"tsdown": "^0.23.1",
+		"tslab": "^1.0.22"
 	},
-	"devEngines": {
-		"packageManager": {
-			"name": "pnpm",
-			"version": "^11.18.0",
-			"onFail": "download"
-		}
-	}
+	"packageManager": "bun@1.4.2"
 }
