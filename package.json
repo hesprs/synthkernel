@@ -47,11 +47,11 @@
 	},
 	"devDependencies": {
 		"@types/bun": "^1.4.2",
+		"jupyter-bun": "./jupyter-bun.tgz",
 		"oxfmt": "^0.72.0",
 		"oxlint": "^1.87.0",
 		"oxlint-tsgolint": "^7.0.2004",
-		"tsdown": "^0.23.1",
-		"tslab": "^1.0.22"
+		"tsdown": "^0.23.1"
 	},
 	"packageManager": "bun@1.4.2"
 }

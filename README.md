@@ -46,7 +46,7 @@ To read the notebook interactively, you need Jupyter Lab with a TypeScript kerne
 
 ```sh
 bun install
-tslab install --user # register TS kernel
+bun jupyter-bun install # register TS kernel
 ```
 
 Then open `whitepaper.ipynb` in your viewer (Jupyter WebUI or VSCode), choose the TS kernel.
