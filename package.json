@@ -17,7 +17,7 @@
 	"license": "MIT",
 	"author": {
 		"name": "Hēsperus",
-		"email": "hesprs@outlook.com"
+		"url": "https://hesprs.github.io"
 	},
 	"repository": {
 		"type": "git",
@@ -47,7 +47,7 @@
 	},
 	"devDependencies": {
 		"@types/bun": "^1.4.2",
-		"jupyter-bun": "./jupyter-bun.tgz",
+		"jupyter-bun": "^0.1.0",
 		"oxfmt": "^0.72.0",
 		"oxlint": "^1.87.0",
 		"oxlint-tsgolint": "^7.0.2004",

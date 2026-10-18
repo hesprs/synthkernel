@@ -9,7 +9,7 @@
       },
       "devDependencies": {
         "@types/bun": "^1.4.2",
-        "jupyter-bun": "./jupyter-bun.tgz",
+        "jupyter-bun": "^0.1.0",
         "oxfmt": "^0.72.0",
         "oxlint": "^1.87.0",
         "oxlint-tsgolint": "^7.0.2004",
@@ -228,7 +228,7 @@
 
     "import-without-cache": ["import-without-cache@0.4.1", "", {}, "sha512-vXoV9PjKHEednCUu01e98TkImxy67e3BJXbTIOmIq4Hyzw3IAwYRcuPkfeTzJzwyyts4kjuA73x+pWJLc4f86A=="],
 
-    "jupyter-bun": ["jupyter-bun@./jupyter-bun.tgz", { "dependencies": { "oxc-parser": "^0.153.0" }, "bin": "dist/index.ts" }, "sha512-ng/HSmOQMBBr1htYNrXMgvvc46qN4p85LABUywcMYVx8La404jJuI4O2W5oG3LqYu6uosXk7408bbXqSjDOY/A=="],
+    "jupyter-bun": ["jupyter-bun@0.1.0", "", { "dependencies": { "oxc-parser": "^0.153.0" }, "bin": { "jupyter-bun": "dist/index.js" } }, "sha512-6mN7Qfh02Hjb3kDclnWzIvuYbca0c6qWaq3mczfVDEq7chN9yPOhmpEofMcK26hGMDpJNFvRQCmuwn6I7EWsHA=="],
 
     "obug": ["obug@3.0.0", "", {}, "sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw=="],
 
